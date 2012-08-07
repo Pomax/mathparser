@@ -45,11 +45,11 @@ void draw() {
   background(255,255,250);
 
   ArithmeticFragment a = new ArithmeticFragment(functionString);
-  println("a: "+a.toString());
+//  println("a: "+a.toString());
   a.expand();
-  println("ae: "+a.toString());
+//  println("ae: "+a.toString());
   TreeNode t = a.formFunctionTree();
-  println("t: "+a.toString());
+  println("using function tree: "+a.toString());
   
   double step = (end-start)/steps, result;
   String[] var_names = {controlledVar};
