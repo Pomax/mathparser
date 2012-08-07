@@ -1,3 +1,5 @@
+int afCount = 1;
+
 /**
  * An arithmetic fragment models a piece of a function.
  */
@@ -23,7 +25,28 @@ class ArithmeticFragment {
     //println("forming "+uid+" for ["+fragment+"]");
     this.fragment = fragment;
   }
+  
+  private boolean isFunctionWrapped(String fragment) {
+    if(fragment.matches("^\\w+\\(.+\\)")) {
+      fragment = fragment.replaceAll("^\\w+","");
+      return isParensWrapped(fragment);
+    }
+    return false;
+  }
 
+  private boolean isParensWrapped(String fragment) {
+    if(!fragment.matches("^\\(.*\\)$")) return false;
+    String[] tokens = fragment.split("");
+    int groupCount = 0;
+    for(int i=0, last=tokens.length; i<last; i++) {
+      if(is(tokens[i],"")) continue;
+      if(is(tokens[i],"(")) groupCount++;
+      if(is(tokens[i],")")) groupCount--;
+      if(groupCount==0 && i<last-1) return false;
+    }
+    return groupCount==0;
+  }
+ 
   /**
    * Expand this fragment, if possible
    */  
@@ -31,21 +54,19 @@ class ArithmeticFragment {
     boolean compound = false, unwrapped = false;
 
     // is this a function? if so, unwrap it
-    if (fragment.matches("^\\w+\\(.+\\)")) {
+    if (isFunctionWrapped(fragment)) {
       unwrapped = true;
-      functor = fragment.replaceAll("\\(.*$","");
-      fragment = fragment.replaceAll("^\\w+\\(","").replaceAll("\\)$","");
+      functor = fragment.substring(0,fragment.indexOf("("));
+      fragment = fragment.replaceAll("^"+functor,"");
     }
-    else if (fragment.matches("^\\(.+\\)$")) {
+    if (isParensWrapped(fragment)) {
       unwrapped = true;
-      functor = "";
       fragment = fragment.substring(1,fragment.length()-1);
     }
 
     // expand the fragment
     Tape tape = new Tape(fragment);
-    String buffer = "";
-    char token;
+    String buffer = "", token;
     while(!tape.eod()) {
       token = tape.next();
       // If we encounter an arithmetic operator,
@@ -59,8 +80,8 @@ class ArithmeticFragment {
       }
       // If we encounter a grouping token,
       // skip over the group content.
-      else if (token=='(') {
-        buffer += tape.skipGroup('(',')');
+      else if (is(token,"(")) {
+        buffer += tape.skipGroup("(",")");
       }
       // Otherwise, move token to buffer
       else { buffer += token; }
@@ -82,8 +103,8 @@ class ArithmeticFragment {
   /**
    * does a char represent a mathematical operator?
    */
-  boolean isArithmeticOperator(char t) {
-    return t=='+' || t=='-' || t=='*' || t=='/' || t=='^';
+  boolean isArithmeticOperator(String t) {
+    return is(t,"+") || is(t,"-") || is(t,"*") || is(t,"/") || is(t,"^");
   }
   
   /**
@@ -157,9 +178,9 @@ class ArithmeticFragment {
 
 // operators are either +, -, *, / or ^ -- no op is represented as a space
 class Operator extends ArithmeticFragment {
-  char operator;
-  Operator(char op) {
-    super(""+op);
+  String operator;
+  Operator(String op) {
+    super(op);
     operator = op;
     fragment = "";
   }

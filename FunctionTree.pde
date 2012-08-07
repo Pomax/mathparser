@@ -25,7 +25,7 @@ class SimpleNode extends TreeNode {
     for(int i=0, last=var_names.length; i<last; i++) {
       if(is(var_names[i],label)) {
         return values[i]; }}
-    println("ERROR: no variable assignment resolution could be performed for "+label);
+    println("ERROR: no variable assignment resolution could be performed for "+label+" in {" + toString() + "} based on ["+var_names+"]");
     return Double.NaN;
   }
   String toString() { return label; }
@@ -118,15 +118,13 @@ class PowerNode extends OperatorNode {
 }
 
 // builder function
-TreeNode getOperatorNode(char op) {
-  switch(op) {
-    case '+' : return new AdditionNode();
-    case '-' : return new SubtractionNode();
-    case '*' : return new MultiplicationNode();
-    case '/' : return new DivisionNode();
-    case '^' : return new PowerNode();
-    default : return null;
-  }
+TreeNode getOperatorNode(String op) {
+  if(is(op,"+"))  return new AdditionNode();
+  if(is(op,"-"))  return new SubtractionNode();
+  if(is(op,"*"))  return new MultiplicationNode();
+  if(is(op,"/"))  return new DivisionNode();
+  if(is(op,"^"))  return new PowerNode();
+  return null;
 }
 
 // ===
@@ -289,9 +287,6 @@ TreeNode getFunctionNode(String functor, TreeNode content) {
   println("ERROR: could not find object for ["+functor+"]");
   return null;
 }
-
-// necessary due to String equivalence vs. identity
-boolean is(String a, String b) { return a.equals(b); }
 
 // ===
 

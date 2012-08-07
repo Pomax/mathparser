@@ -3,7 +3,7 @@
 **/
 class Tape {
   // the data on the tape.
-  char[] data;
+  String[] data;
   // the tape length.
   int length;
   /// the position of the read head on the tape.
@@ -11,25 +11,24 @@ class Tape {
 
   // create a new tape with data
   Tape(String data) {
-    this.data = data.replaceAll("[ \\t\\n\\s]","").toCharArray();
+    this.data = data.replaceAll("[ \\t\\n\\s]","").split("");
     this.length = this.data.length; }
 
   // read the next character on the tape.
-  char next() { return data[position++]; }
+  String next() { return data[position++]; }
 
   // look at the next character without forwarding the read head.
-  char peek() { return data[position+1]; }
+  String peek() { return data[position+1]; }
 
   // skip over a grouped expression, including any possible
   // nested groups inside this grouped expression.
-  String skipGroup(char opener, char closer) {
-    String buffer = "";
-    char _tmp;
+  String skipGroup(String opener, String closer) {
+    String buffer = "", _tmp;
     while(position<length) {
       _tmp = data[position++];
-      if(_tmp==opener) {
+      if(is(_tmp, opener)) {
         buffer += skipGroup(opener, closer); }
-      else if(_tmp==closer) { break; }
+      else if(is(_tmp, closer)) { break; }
       else { buffer += _tmp; }
     }
     return opener + buffer + closer;
@@ -40,7 +39,7 @@ class Tape {
   
   // string representation of the tape.
   String toString() { 
-    String s = new String(data); 
+    String s = join(data, ""); 
     s = s.substring(0,position) + " "+data[position]+" "+s.substring(position+1);
     return s;
   }
