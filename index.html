@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>A Math Parser for Processing, written in Processing</title>
+    <script src="processing.js"></script>
+    <script src="Double.js"></script>
+    <script>
+      var $ = function(s) { return document.querySelector(s); };
+      var y_backup = "";
+
+      function plot() {
+        var fx = $('#function_x').value || $('#function_x').placeholder;
+        var fy = $('#function_y').value || $('#function_y').placeholder;
+        var v = $('#variable').value || $('#variable').placeholder;
+        var s = $('#start').value || $('#start').placeholder;
+        var e = $('#end').value || $('#end').placeholder;
+        var steps = $('#steps').value || $('#steps').placeholder;
+        
+        if(!$('#parametric').checked) { fy = null; }
+
+        Processing.getInstanceById("plot").plot(fx,fy,v,parseFloat(s),parseFloat(e),parseInt(steps));
+      }
+      
+      function checkbox(input) {
+        var on = input.checked, off = !on;
+        $("#params").style.display = (off ? "none" : "block");
+        
+        if (off) { y_backup = $('#function_y').value; }
+        $('#function_y').value = (on && y_backup!="" ? y_backup : "");
+        $('#function_y').placeholder = (off ? "" : "cos(t)");
+        $('#paramlabel_x').innerHTML = (off ? "" : " for x");
+        $('#paramlabel_y').innerHTML = (off ? "" : " for y");
+        plot();
+      }
+    </script>
+    <style>
+    #function { width: 25em; }
+    #variable { width: 2em; text-align: center; }
+    #start, #end, #steps { width: 3em; text-align: center; }
+    </style>
+  </head>
+  
+  <body>
+    <h2>A math function parser for Processing, written in Processing</h2>
+
+    <div>
+      Type a function<span id="paramlabel_x"> for x</span>: <input type="text" placeholder="sin(t)" id="function_x">
+      (parametric function: <input type="checkbox" id="parametric" onchange="checkbox(this)">)<br>
+      <div id="params" style="display: none">
+        Type a function<span id="paramlabel_y"> for y</span>: <input type="text" placeholder="cos(t)" id="function_y">
+      </div>
+      Name of the controlled variable: <input type="text" placeholder="t" id="variable"><br>
+      Range: start = <input type="text" placeholder="0" id="start">
+             end = <input type="text" placeholder="6.3" id="end">
+             (using <input type="text" placeholder="250" id="steps"> steps)<br>
+      <input type="button" value="Plot function" onclick="plot()"><br>
+    </div>
+
+    <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde" style="clear: both; border: 1px solid black;"></canvas>
+
+  </body>
+</html>

@@ -10,13 +10,13 @@ boolean is(String a, String b) { return a.equals(b); }
 
 // PLOTTING PARAMETERS
 //String functionString = "t^3*0 + 3*t^2*(1-t)*90 + 3*t*(1-t)^2*10 + (1-t)^3*100";
-//String functionString = "(1-t)";
-//String functionString = "sin(1-t)";
-String functionString = "sin(t) - cos(t^2)";
+String functionString_x = "sin(t)";
+String functionString_y = null;
 String controlledVar = "t";
 double start = 0;
-double end = 6;
-int steps = 100;
+double end = 6.30;
+int steps = 250;
+double padding = 20;
 
 /**
  * standard setup
@@ -27,10 +27,18 @@ void setup() {
 }
 
 /**
- * set up new plot parameters
+ * set up new plot parameters (normal function)
  */
-void plot(String _functionString, String _controlledVar, double _start, double _end, int _steps) {  
-  functionString = _functionString;
+void plot(String _functionString, String _controlledVar, double _start, double _end, int _steps) {
+  plot(_functionString, null, _start, _end, _steps);
+}
+
+/**
+ * set up new plot parameters (parametric function, 2 dimensions)
+ */
+void plot(String _functionString_x, String _functionString_y, String _controlledVar, double _start, double _end, int _steps) {  
+  functionString_x = _functionString_x;
+  functionString_y = _functionString_y;
   controlledVar = _controlledVar;
   start = _start;
   end = _end;
@@ -43,13 +51,19 @@ void plot(String _functionString, String _controlledVar, double _start, double _
  */
 void draw() {
   background(255,255,250);
+  
+  if(functionString_y==null) {
+    drawSingle();
+  } else {
+    drawParametric();
+  }
+}
 
-  ArithmeticFragment a = new ArithmeticFragment(functionString);
-//  println("a: "+a.toString());
+void drawSingle() {
+
+  ArithmeticFragment a = new ArithmeticFragment(functionString_x);
   a.expand();
-//  println("ae: "+a.toString());
   TreeNode t = a.formFunctionTree();
-  println("using function tree: "+a.toString());
   
   double step = (end-start)/steps, result;
   String[] var_names = {controlledVar};
@@ -75,20 +89,19 @@ void draw() {
   }
   
   // plot values, scaled to fit the surface
-
   double cx=0, cy=0, prevx=0, prevy=0;
   for(int bin = 0; bin<bins; bin++) {
     // first point is a point
     if(bin==0) {
-      prevx = map(domain[bin],start,end,0,width);
-      prevy = map(results[bin],minr,maxr,height,0);
+      prevx = map(domain[bin],   start,end,  padding,width-padding);
+      prevy = map(results[bin],  minr,maxr,  height-padding,padding);
       point(prevx, prevy);
       continue;
     }
 
     stroke(0);
-    cx = map(domain[bin],start,end,0,width);
-    cy = map(results[bin],minr,maxr,height,0);
+    cx = map(domain[bin],   start,end,  padding,width-padding);
+    cy = map(results[bin],  minr,maxr,  height-padding,padding);
     point(cx,cy);
 
     // NOTE: these lines may look completely wrong!
@@ -96,7 +109,75 @@ void draw() {
     line(prevx, prevy, cx, cy);
     prevx = cx;
     prevy = cy;
-    
-    //println(cx+","+cy);
+  }
+}
+
+void drawParametric() {
+
+  ArithmeticFragment ax = new ArithmeticFragment(functionString_x);
+  ax.expand();
+  TreeNode tx = ax.formFunctionTree();
+  
+  ArithmeticFragment ay = new ArithmeticFragment(functionString_y);
+  ay.expand();
+  TreeNode ty = ay.formFunctionTree();
+  
+  double step = (end-start)/steps, result;
+  String[] var_names = {controlledVar};
+  double[] values = {0};
+  
+  double segments = (end-start)/step;
+  int bins = (int) segments;
+  double[] domain = new double[bins];
+
+  double[] results_x = new double[bins];
+  double minr_x = 999999999;
+  double maxr_x = -minr_x;
+
+  double[] results_y = new double[bins];
+  double minr_y = minr_x;
+  double maxr_y = maxr_x;
+  
+  double v, vx, vy;
+
+  // get values
+  for(int bin = 0; bin<bins; bin++) {
+    v = start + bin*step;
+    domain[bin] = v;
+    values[0] = v;
+    vx = tx.evaluate(var_names, values);
+    results_x[bin] = vx;
+
+    vy = ty.evaluate(var_names, values);
+    results_y[bin] = vy;
+
+    if(vx>maxr_x) { maxr_x = vx; }
+    if(vx<minr_x) { minr_x = vx; }
+
+    if(vy>maxr_y) { maxr_y = vy; }
+    if(vy<minr_y) { minr_y = vy; }
+  }
+  
+  // plot values, scaled to fit the surface
+  double cx=0, cy=0, prevx=0, prevy=0;
+  for(int bin = 0; bin<bins; bin++) {
+    // first point is a point
+    if(bin==0) {
+      prevx = map(results_x[bin],  minr_x,maxr_x,  padding,width-padding);
+      prevy = map(results_y[bin],  minr_y,maxr_y,  height-padding,padding);
+      point(prevx, prevy);
+      continue;
+    }
+
+    stroke(0);
+    cx = map(results_x[bin],  minr_x,maxr_x,  padding,width-padding);
+    cy = map(results_y[bin],  minr_y,maxr_y,  height-padding,padding);
+    point(cx,cy);
+
+    // NOTE: these lines may look completely wrong!
+    stroke(150);
+    line(prevx, prevy, cx, cy);
+    prevx = cx;
+    prevy = cy;
   }
 }
