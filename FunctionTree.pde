@@ -241,15 +241,6 @@ class FunctionNode_log extends FunctionNode {
   }
 }
 
-class FunctionNode_exp extends FunctionNode {
-  FunctionNode_exp(TreeNode content) {
-    super("exp", content);
-  }
-  double evaluate(String[] var_names, double[] values) {
-    return Math.exp(content.evaluate(var_names, values));
-  }
-}
-
 class FunctionNode_sqrt extends FunctionNode {
   FunctionNode_sqrt(TreeNode content) {
     super("sqrt", content);
@@ -281,7 +272,6 @@ TreeNode getFunctionNode(String functor, TreeNode content) {
   if (is(functor,"tanh")) return new FunctionNode_tanh(content);
   if (is(functor,"ln"))  return new FunctionNode_ln(content);
   if (is(functor,"log"))  return new FunctionNode_log(content);
-  if (is(functor,"exp"))  return new FunctionNode_exp(content);
   if (is(functor,"sqrt"))  return new FunctionNode_sqrt(content);
   if (is(functor,"abs"))  return new FunctionNode_abs(content);
   println("ERROR: could not find object for ["+functor+"]");

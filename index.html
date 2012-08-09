@@ -36,26 +36,87 @@
     #function { width: 25em; }
     #variable { width: 2em; text-align: center; }
     #start, #end, #steps { width: 3em; text-align: center; }
+    dl { margin-left: 1em; }
+    dl * { line-height: 1.2em; }
+    dt { font-family: monospace; }
+    dd { margin-top: -1.2em; padding-left: 2em; }
+    p { margin: 0; padding: 0; }
+    p + p { margin-top: 1.2em; }
     </style>
   </head>
   
-  <body>
+  <body style="vertical-align: top;">
     <h2>A math function parser for Processing, written in Processing</h2>
 
-    <div>
-      Type a function<span id="paramlabel_x"> for x</span>: <input type="text" placeholder="sin(t) - cos(t)" id="function_x">
-      (parametric function: <input type="checkbox" id="parametric" onchange="checkbox(this)">)<br>
-      <div id="params" style="display: none">
-        Type a function<span id="paramlabel_y"> for y</span>: <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y">
+    <div style="float:left;">
+      <div>
+        Type a function<span id="paramlabel_x"></span>: <input type="text" placeholder="sin(t) - cos(t)" id="function_x">
+        (parametric function: <input type="checkbox" id="parametric" onchange="checkbox(this)">)<br>
+        <div id="params" style="display: none">
+          Type a function<span id="paramlabel_y"> for y</span>: <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y">
+        </div>
+        Name of the controlled variable: <input type="text" placeholder="t" id="variable"><br>
+        Range: start = <input type="text" placeholder="0" id="start">
+               end = <input type="text" placeholder="6.3" id="end">
+               (using <input type="text" placeholder="250" id="steps"> steps)<br>
+        <input type="button" value="Plot function" onclick="plot()"><br>
       </div>
-      Name of the controlled variable: <input type="text" placeholder="t" id="variable"><br>
-      Range: start = <input type="text" placeholder="0" id="start">
-             end = <input type="text" placeholder="6.3" id="end">
-             (using <input type="text" placeholder="250" id="steps"> steps)<br>
-      <input type="button" value="Plot function" onclick="plot()"><br>
+
+      <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde" style="clear: both; border: 1px solid black;"></canvas>
     </div>
 
-    <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde" style="clear: both; border: 1px solid black;"></canvas>
+    <div style="float: left; width: 400px; padding-left: 8em;">
+      <p>The API (<i>a.k.a. "what can I use"</i>):</p>
+      
+      <p><strong>operators</strong></p>
+      
+      <dl>
+        <dt>n+m</dt><dd>m added to n</dd>
+        <dt>n-m</dt><dd>m subtracted from n</dd>
+        <dt>n*m</dt><dd>n multiplied bm m</dd>
+        <dt>n/m</dt><dd>n divided bm m</dd>
+        <dt>n^m</dt><dd>n raised to the power m</dd>
+        <dt>(…)</dt><dd>explicit grouping</dd>
+      </dl>
+      
+      <p>There is no -<i>x</i> at the moment, but you can effect
+      the same thing by using 0-<i>x</i>. A bit silly, but it'll do for now.</p>
+      
+      <p><strong>operator order</strong></p>
+      
+      <dl>
+        <dt>1</dt><dd>barring explicit groups, ^ is evaluated first,</dd>
+        <dt>2</dt><dd>then * and / are evaluated, </dd>
+        <dt>3</dt><dd>and then + and - are evaluated.</dd>
+      </dl>
+      
+      <p>In a statement like "t^2 - t + 10", equal order operators
+      are resolved left to right, so this is equivalent to "(t^2 - t) + 10".</p>
+      
+      <p><strong>functions</strong></p>
+      
+      <dl>
+        <dt>sin(x)</dt><dd>the sine function</dd>
+        <dt>cos(x)</dt><dd>the cosine function</dd>
+        <dt>tan(x)</dt><dd>the tangent function</dd>
+        <dt>asin(x)</dt><dd>the arcsine function</dd>
+        <dt>acos(x)</dt><dd>the arccosine function</dd>
+        <dt>atan(x)</dt><dd>the arctangent function</dd>
+        <dt>sinh(x)</dt><dd>the hyperbolic sine function</dd>
+        <dt>cosh(x)</dt><dd>the hyperbolic cosine function</dd>
+        <dt>tanh(x)</dt><dd>the hyperbolic tangent function</dd>
+        <dt>ln(x)</dt><dd>the natural logarithm function (using base <i>e</i>)</dd>
+        <dt>log(x)</dt><dd>the decimal logarithm function (using base 10)</dd>
+        <dt>sqrt(x)</dt><dd>the square root function</dd>
+        <dt>abs(x)</dt><dd>the absolute value function</dd>
+      </dl>
+      
+      <p>There is no <code>exp</code> function - just use <i>e</i><code>^</code><i>x</i>.
+      There are also no other exponent function beyond <code>sqrt</code>,
+      which is just something that effects <i>x</i><code>^</code>0.5 — simply
+      use the <code>^</code> operator for anything involving roots and powers.</p>
+
+    </div>
 
   </body>
 </html>

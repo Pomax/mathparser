@@ -96,12 +96,10 @@ void draw() {
 }
 
 String prec(double d, int l) {
-  String s = ""+d;
-  int pos = s.indexOf(".");
-  if(pos>-1 && s.length()>l+pos) {
-    s = s.substring(0,l+pos);
-  }
-  return s;
+  double f = pow(10,l);
+  int v = (int)(round(f*d));
+  d = v / f; 
+  return "" + d;
 }
 
 double[] drawSingle() {
@@ -145,7 +143,7 @@ double[] drawSingle() {
     point(cx,cy);
 
     // NOTE: these lines may look completely wrong!
-    stroke(150);
+    stroke(0,0,50,25);
     line(prevx, prevy, cx, cy);
     prevx = cx;
     prevy = cy;
@@ -208,7 +206,7 @@ double[] drawParametric() {
     point(cx,cy);
 
     // NOTE: these lines may look completely wrong!
-    stroke(150);
+    stroke(0,0,50,25);
     line(prevx, prevy, cx, cy);
     prevx = cx;
     prevy = cy;
