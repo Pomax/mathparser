@@ -90,9 +90,10 @@ void draw() {
   fill(0);
   textAlign(LEFT);
   text(prec(bounds[1],2), 3, height-padding-3); // miny
-  text(prec(bounds[3],2), 3, padding+5); // maxy
+  text(prec(bounds[3],2), 3, padding+15); // maxy
   text(prec(bounds[0],2), padding+5, height-3); // minx
-  text(prec(bounds[2],2), width-padding-3, height-3); // maxx
+  textAlign(RIGHT);
+  text(prec(bounds[2],2), width-padding+4, height-3); // maxx
 }
 
 String prec(double d, int l) {

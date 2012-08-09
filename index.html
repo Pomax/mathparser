@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html style="height: 100%;>
   <head>
     <meta charset="utf-8">
     <title>A Math Parser for Processing, written in Processing</title>
@@ -45,7 +45,7 @@
     </style>
   </head>
   
-  <body style="vertical-align: top;">
+  <body style="vertical-align: top; height: 90%;">
     <h2>A math function parser for Processing, written in Processing</h2>
 
     <div style="float:left;">
@@ -62,10 +62,10 @@
         <input type="button" value="Plot function" onclick="plot()"><br>
       </div>
 
-      <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde" style="clear: both; border: 1px solid black;"></canvas>
+      <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde" style="clear: both; border: 1px solid black;"></canvas>     
     </div>
 
-    <div style="float: left; width: 400px; padding-left: 8em;">
+    <div style="float: right; width: 500px; height: 90%; overflow-y: scroll; ">
       <p>The API (<i>a.k.a. "what can I use"</i>):</p>
       
       <p><strong>operators</strong></p>
@@ -92,6 +92,13 @@
       
       <p>In a statement like "t^2 - t + 10", equal order operators
       are resolved left to right, so this is equivalent to "(t^2 - t) + 10".</p>
+
+      <p><strong>constants</strong></p>
+      
+      <dl>
+        <dt>e</dt><dd>the natural logarithm base</dd>
+        <dt>pi</dt><dd>the circumference of a circle with diameter 0.5</dd>
+      </dl>
       
       <p><strong>functions</strong></p>
       
@@ -116,6 +123,9 @@
       which is just something that effects <i>x</i><code>^</code>0.5 — simply
       use the <code>^</code> operator for anything involving roots and powers.</p>
 
+      <p>Also, if you need a different base logarithmic function,
+      use log division: base 2 is log(x)/log(2), base pi is log(x)/log(pi),
+      etc.</p>
     </div>
 
   </body>
