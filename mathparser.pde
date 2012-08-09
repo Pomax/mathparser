@@ -10,8 +10,10 @@ boolean is(String a, String b) { return a.equals(b); }
 
 // PLOTTING PARAMETERS
 //String functionString = "t^3*0 + 3*t^2*(1-t)*90 + 3*t*(1-t)^2*10 + (1-t)^3*100";
-String functionString_x = "sin(t)";
+String functionString_x = "sin(t) - cos(t)";
 String functionString_y = null;
+TreeNode tx = (new ArithmeticFragment(functionString_x)).formFunctionTree(), ty;
+
 String controlledVar = "t";
 double start = 0;
 double end = 6.30;
@@ -38,11 +40,21 @@ void plot(String _functionString, String _controlledVar, double _start, double _
  */
 void plot(String _functionString_x, String _functionString_y, String _controlledVar, double _start, double _end, int _steps) {  
   functionString_x = _functionString_x;
+
+  ArithmeticFragment a = new ArithmeticFragment(functionString_x);
+  tx = a.formFunctionTree();
+
   functionString_y = _functionString_y;
+  if(functionString_y!=null) {
+    a = new ArithmeticFragment(functionString_y);
+    ty = a.formFunctionTree();
+  }
+
   controlledVar = _controlledVar;
   start = _start;
   end = _end;
   steps = _steps;
+
   redraw();
 }
 
@@ -52,19 +64,47 @@ void plot(String _functionString_x, String _functionString_y, String _controlled
 void draw() {
   background(255,255,250);
   
-  if(functionString_y==null) {
-    drawSingle();
-  } else {
-    drawParametric();
-  }
+  double[] bounds;
+  if(functionString_y==null) { bounds = drawSingle(); }
+  else { bounds = drawParametric(); }
+
+  // y/x axes
+  stroke(0,50);
+  line(padding,0,padding,height);
+  line(0,height-padding,width,height-padding);
+  // label stubs
+  line(width-padding,5+height-padding,width-padding,-5+height-padding);
+  line(padding-5,padding,padding+5,padding);
+  
+  // can we place 0/0?
+  stroke(0,20);
+  double x, y;
+  if((bounds[0]<0 && bounds[2]>0) || (bounds[0]>0 && bounds[2]<0)) {
+    x = map(0,min(bounds[0],bounds[2]),max(bounds[0],bounds[2]),0,width);
+    line(x,0,x,height); }
+  if((bounds[1]<0 && bounds[3]>0) || (bounds[1]>0 && bounds[3]<0)) {
+    y = map(0,min(bounds[1],bounds[3]),max(bounds[1],bounds[3]),height,0);
+    line(0,y,width,y); }
+
+  // axis labels
+  fill(0);
+  textAlign(LEFT);
+  text(prec(bounds[1],2), 3, height-padding-3); // miny
+  text(prec(bounds[3],2), 3, padding+5); // maxy
+  text(prec(bounds[0],2), padding+5, height-3); // minx
+  text(prec(bounds[2],2), width-padding-3, height-3); // maxx
 }
 
-void drawSingle() {
+String prec(double d, int l) {
+  String s = ""+d;
+  int pos = s.indexOf(".");
+  if(pos>-1 && s.length()>l+pos) {
+    s = s.substring(0,l+pos);
+  }
+  return s;
+}
 
-  ArithmeticFragment a = new ArithmeticFragment(functionString_x);
-  a.expand();
-  TreeNode t = a.formFunctionTree();
-  
+double[] drawSingle() {
   double step = (end-start)/steps, result;
   String[] var_names = {controlledVar};
   double[] values = {0};
@@ -82,7 +122,7 @@ void drawSingle() {
     v = start + bin*step;
     domain[bin] = v;
     values[0] = v;
-    result = t.evaluate(var_names, values);
+    result = tx.evaluate(var_names, values);
     results[bin] = result;
     if(result>maxr) { maxr = result; }
     if(result<minr) { minr = result; }
@@ -110,18 +150,11 @@ void drawSingle() {
     prevx = cx;
     prevy = cy;
   }
+  
+  return new double[]{start,minr,end,maxr};
 }
 
-void drawParametric() {
-
-  ArithmeticFragment ax = new ArithmeticFragment(functionString_x);
-  ax.expand();
-  TreeNode tx = ax.formFunctionTree();
-  
-  ArithmeticFragment ay = new ArithmeticFragment(functionString_y);
-  ay.expand();
-  TreeNode ty = ay.formFunctionTree();
-  
+double[] drawParametric() {
   double step = (end-start)/steps, result;
   String[] var_names = {controlledVar};
   double[] values = {0};
@@ -180,4 +213,6 @@ void drawParametric() {
     prevx = cx;
     prevy = cy;
   }
+
+  return new double[]{minr_x,minr_y,maxr_x,maxr_y};
 }

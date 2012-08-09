@@ -83,7 +83,7 @@ class OperatorNode extends TreeNode implements OpStrength {
 }
 
 class AdditionNode extends OperatorNode {
-  AdditionNode() { super(); operator = "+"; strength = 1; }
+  AdditionNode() { super(); operator = "+"; strength = 0; }
   double evaluate(String[] var_names, double[] values) {
     return left.evaluate(var_names, values) + right.evaluate(var_names, values);
   }

@@ -5,7 +5,9 @@
 Double = {
   parseDouble: function(str) {
     var v = parseFloat(str);
-    if(v==str) { return v; }
-    throw "error";
+    if(v==str) {
+      return v;
+    }
+    throw "ERROR: string does not represent a number";
   }
 };

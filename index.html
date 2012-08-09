@@ -7,7 +7,8 @@
     <script src="Double.js"></script>
     <script>
       var $ = function(s) { return document.querySelector(s); };
-      var y_backup = "";
+      var y_backup = "",
+          y_placeholder = "cos(t) - sin(t)^2 + sin(t)";
 
       function plot() {
         var fx = $('#function_x').value || $('#function_x').placeholder;
@@ -25,10 +26,7 @@
       function checkbox(input) {
         var on = input.checked, off = !on;
         $("#params").style.display = (off ? "none" : "block");
-        
-        if (off) { y_backup = $('#function_y').value; }
-        $('#function_y').value = (on && y_backup!="" ? y_backup : "");
-        $('#function_y').placeholder = (off ? "" : "cos(t)");
+        $('#function_y').placeholder = y_placeholder;
         $('#paramlabel_x').innerHTML = (off ? "" : " for x");
         $('#paramlabel_y').innerHTML = (off ? "" : " for y");
         plot();
@@ -45,10 +43,10 @@
     <h2>A math function parser for Processing, written in Processing</h2>
 
     <div>
-      Type a function<span id="paramlabel_x"> for x</span>: <input type="text" placeholder="sin(t)" id="function_x">
+      Type a function<span id="paramlabel_x"> for x</span>: <input type="text" placeholder="sin(t) - cos(t)" id="function_x">
       (parametric function: <input type="checkbox" id="parametric" onchange="checkbox(this)">)<br>
       <div id="params" style="display: none">
-        Type a function<span id="paramlabel_y"> for y</span>: <input type="text" placeholder="cos(t)" id="function_y">
+        Type a function<span id="paramlabel_y"> for y</span>: <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y">
       </div>
       Name of the controlled variable: <input type="text" placeholder="t" id="variable"><br>
       Range: start = <input type="text" placeholder="0" id="start">

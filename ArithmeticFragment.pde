@@ -112,6 +112,7 @@ class ArithmeticFragment {
    */
   TreeNode formFunctionTree() {
     TreeNode finalNode;
+    expand();
 
     if(children.size()>0) {
       // bottom-up conversion
@@ -125,7 +126,7 @@ class ArithmeticFragment {
       }
 
       // assemble these nodes into a tree.
-      for(int s=3; s>0; s--) {
+      for(int s=3; s>=0; s--) {
         for(int i=nodes.size()-1; i>=0; i--) {
           TreeNode tn = nodes.get(i);
           if(tn instanceof OpStrength) {
@@ -133,9 +134,7 @@ class ArithmeticFragment {
               if (!tn.hasLeaves()) {
                 TreeNode right = nodes.get(i+1);
                 TreeNode left = nodes.get(i-1);
-//   println("["+i+"] " + toString() + " - " + tn.toString() + "["+left.toString()+"] " + "["+right.toString()+"]");
                 tn.setLeaves(left, right);
-//   println("    " + tn.toString());
                 nodes.remove(i+1);
                 nodes.remove(i-1);
               }
