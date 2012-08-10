@@ -68,3 +68,20 @@ use log division:
   base 2  => log(x)/log(2) or ln(x)/ln(2)
   base pi => log(x)/log(pi) or ln(x)/ln(pi)
   etc.
+  
+===========================================================
+
+  A demonstrator:
+
+    http://processingjs.nihongoresources.com/mathparser
+
+  Excellent set of functions/parameters to try:
+  
+    fx = cos(t)*(1-cos(t)+ln(t+1))
+    fy = sin(t)*(1-cos(t)-ln(1+t))
+    variable = t
+    start = 0
+    end = 2000
+    steps = 3500
+
+===========================================================
