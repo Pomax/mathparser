@@ -1,15 +1,23 @@
 abstract class TreeNode {
   TreeNode left, right;
   TreeNode(){}
-  void setLeaves(TreeNode l, TreeNode r) { left = l; right = r; }
+
+  boolean hasRight() { return true; }
+  boolean hasLeft() { return true; }
   boolean hasLeaves() { return left!=null && right!=null; }
+  void setLeaves(TreeNode l, TreeNode r) { left = l; right = r; }
+
   double evaluate(String[] var_names, double[] values) {
     return left.evaluate(var_names, values) + right.evaluate(var_names, values);
   }
 }
 
-
 // ===
+
+boolean isNumber(String s) {
+  try { Double.parseDouble(s);  return true; }
+  catch (Exception e) {} return false;
+}
 
 class NumberNode extends TreeNode {
   double value;
@@ -53,77 +61,93 @@ TreeNode getSimpleNode(String fragment) {
   return new SimpleNode(fragment);
 }
 
-boolean isNumber(String s) {
-  try {
-    Double.parseDouble(s);
-    return true;
-  } catch (Exception e) {}
-  return false;
-}
-
 // ===
 
 interface OpStrength { int getStrength(); }
 
-// not sure how to get this one in yet. But it exists.
-class NegativeNode extends SimpleNode implements OpStrength {
-  int strength = 3;
-  int getStrength() { return strength; }
-  NegativeNode(String label) { super(label); }
-  double evaluate(String[] var_names, double[] values) {
-    return -super.evaluate(var_names, values);    
-  }
-}
-
 class OperatorNode extends TreeNode implements OpStrength {
   String operator;
   int strength;
+  OperatorNode(String op, int s) { operator = op; strength = s; } 
   int getStrength() { return strength; }
   String toString() { return "(" + (left!=null ? left.toString() : "") + operator + (right!=null ? right.toString() : "") + ")"; }
 }
 
 class AdditionNode extends OperatorNode {
-  AdditionNode() { super(); operator = "+"; strength = 0; }
+  AdditionNode() { super("+", 1); }
   double evaluate(String[] var_names, double[] values) {
     return left.evaluate(var_names, values) + right.evaluate(var_names, values);
   }
 }
 
 class SubtractionNode extends OperatorNode {
-  SubtractionNode() { super(); operator = "-"; strength = 1; }
+  SubtractionNode() { super("-",1); }
   double evaluate(String[] var_names, double[] values) {
     return left.evaluate(var_names, values) - right.evaluate(var_names, values);
   }
 }
 
 class MultiplicationNode extends OperatorNode {
-  MultiplicationNode() { super(); operator = "*"; strength = 2; }
+  MultiplicationNode() { super("*",2); }
   double evaluate(String[] var_names, double[] values) {
     return left.evaluate(var_names, values) * right.evaluate(var_names, values);
   }
 }
 
 class DivisionNode extends OperatorNode {
-  DivisionNode() { super(); operator = "/"; strength = 2; }
+  DivisionNode() { super("/",2); }
   double evaluate(String[] var_names, double[] values) {
     return left.evaluate(var_names, values) / right.evaluate(var_names, values);
   }
 }
 
+class NegativeNode extends OperatorNode {
+  NegativeNode() { super("-",3); }
+  boolean hasLeft() { return false; }
+  boolean hasLeaves() { return right!=null; }
+  void setLeaves(TreeNode l, TreeNode r) { right = r; }
+  double evaluate(String[] var_names, double[] values) {
+    return -right.evaluate(var_names, values);
+  }
+}
+
 class PowerNode extends OperatorNode {
-  PowerNode() { super(); operator = "^"; strength = 3; }
+  PowerNode() { super("^",4); }
   double evaluate(String[] var_names, double[] values) {
     return Math.pow(left.evaluate(var_names, values), right.evaluate(var_names, values));
   }
 }
 
+class FactorialNode extends OperatorNode {
+  FactorialNode() { super("!",5); }
+  boolean hasRight() { return false; }
+  boolean hasLeaves() { return left!=null; }
+  void setLeaves(TreeNode l, TreeNode r) { left = l; }
+  double evaluate(String[] var_names, double[] values) {
+    double v = left.evaluate(var_names, values);
+    return factorial(floor(v));
+  }
+
+  // This is a fairly dumb implementation,
+  // but we'll add a LUT later for efficiency.
+  double factorial(double n) {
+    if(n<=1) return 1.0;
+    return n * factorial(n-1);
+  }
+}
 // builder function
 TreeNode getOperatorNode(String op) {
-  if(is(op,"+"))  return new AdditionNode();
-  if(is(op,"-"))  return new SubtractionNode();
-  if(is(op,"*"))  return new MultiplicationNode();
-  if(is(op,"/"))  return new DivisionNode();
-  if(is(op,"^"))  return new PowerNode();
+  if(is(op,"+")) return new AdditionNode();
+  if(is(op,"-")) return new SubtractionNode();
+  if(is(op,"*")) return new MultiplicationNode();
+  if(is(op,"/")) return new DivisionNode();
+  if(is(op,"^")) return new PowerNode();
+  return null;
+}
+
+TreeNode getUnaryOperatorNode(String op) {
+  if(is(op,"-")) return new NegativeNode();
+  if(is(op,"!")) return new FactorialNode();
   return null;
 }
 

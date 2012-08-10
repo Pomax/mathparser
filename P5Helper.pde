@@ -7,3 +7,5 @@ void text(String s, double a, double b) { super.text(s,(float)a,(float)b); }
 double min(double a, double b) { return (a<b ? a : b); }
 double max(double a, double b) { return (a<b ? b : a); }
 double round(double d) { return Math.round(d); }
+double floor(double d) { return Math.floor(d); }
+double ceil(double d) { return Math.ceil(d); }

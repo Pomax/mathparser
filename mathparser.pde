@@ -11,6 +11,7 @@ boolean is(String a, String b) { return a.equals(b); }
 // PLOTTING PARAMETERS
 //String functionString = "t^3*0 + 3*t^2*(1-t)*90 + 3*t*(1-t)^2*10 + (1-t)^3*100";
 String functionString_x = "sin(t) - cos(t)";
+//String functionString_x = "-3!^2*8";
 String functionString_y = null;
 TreeNode tx = (new ArithmeticFragment(functionString_x)).formFunctionTree(), ty;
 
@@ -63,7 +64,7 @@ void plot(String _functionString_x, String _functionString_y, String _controlled
  */
 void draw() {
   background(255,255,250);
-  
+
   double[] bounds;
   if(functionString_y==null) { bounds = drawSingle(); }
   else { bounds = drawParametric(); }
@@ -98,8 +99,7 @@ void draw() {
 
 String prec(double d, int l) {
   double f = pow(10,l);
-  int v = (int)(round(f*d));
-  d = v / f; 
+  d = round(f*d) / f;
   return "" + d;
 }
 

@@ -26,6 +26,7 @@ class ArithmeticFragment {
     this.fragment = fragment;
   }
   
+  // functor(...) fragment?
   private boolean isFunctionWrapped(String fragment) {
     if(fragment.matches("^\\w+\\(.+\\)")) {
       fragment = fragment.replaceAll("^\\w+","");
@@ -34,6 +35,7 @@ class ArithmeticFragment {
     return false;
   }
 
+  // (...) fragment?
   private boolean isParensWrapped(String fragment) {
     if(!fragment.matches("^\\(.*\\)$")) return false;
     String[] tokens = fragment.split("");
@@ -46,7 +48,12 @@ class ArithmeticFragment {
     }
     return groupCount==0;
   }
- 
+
+  // does a char represent a mathematical operator?
+  private boolean isArithmeticOperator(String t) {
+    return is(t,"+") || is(t,"-") || is(t,"*") || is(t,"/") || is(t,"^") || is(t,"!");
+  }
+
   /**
    * Expand this fragment, if possible
    */  
@@ -67,16 +74,26 @@ class ArithmeticFragment {
     // expand the fragment
     Tape tape = new Tape(fragment);
     String buffer = "", token;
+    boolean just_inserted = false;
     while(!tape.eod()) {
       token = tape.next();
       // If we encounter an arithmetic operator,
       // split up the fragment
-      if(isArithmeticOperator(token) && buffer!="") {
-        fragment = "";
+      if(isArithmeticOperator(token)) {
         compound = true;
-        children.add(new ArithmeticFragment(buffer));
-        children.add(new Operator(token));
-        buffer = "";
+        if (!is(buffer.trim(),"") || just_inserted) {
+          // content
+          if(!is(buffer.trim(),"")) {
+            fragment = "";
+            children.add(new ArithmeticFragment(buffer)); }
+          // operator
+          if(is(token,"!")) { children.add(new UnaryOperator(token)); }
+          else { children.add(new Operator(token)); }
+          buffer = "";
+        } else if(is(token,"-")) {
+          children.add(new UnaryOperator("-"));
+        }
+        just_inserted = true;
       }
       // If we encounter a grouping token,
       // skip over the group content.
@@ -84,7 +101,10 @@ class ArithmeticFragment {
         buffer += tape.skipGroup("(",")");
       }
       // Otherwise, move token to buffer
-      else { buffer += token; }
+      else { 
+        just_inserted = false;
+        buffer += token;
+      }
     }
     
     // If we have a non-empty buffer after expanding
@@ -100,13 +120,7 @@ class ArithmeticFragment {
         f.expand(); }}
   }
 
-  /**
-   * does a char represent a mathematical operator?
-   */
-  boolean isArithmeticOperator(String t) {
-    return is(t,"+") || is(t,"-") || is(t,"*") || is(t,"/") || is(t,"^");
-  }
-  
+ 
   /**
    * form the function tree that maps to this fragment
    */
@@ -119,30 +133,42 @@ class ArithmeticFragment {
       ArrayList<TreeNode> nodes = new ArrayList<TreeNode>();
       for(int i=0, last=children.size(); i<last; i++) {
         ArithmeticFragment af = children.get(i);
-        if(af instanceof Operator) { 
+        if(af instanceof UnaryOperator) { 
+          nodes.add(getUnaryOperatorNode(((Operator)af).operator));
+        }
+        else if(af instanceof Operator) { 
           nodes.add(getOperatorNode(((Operator)af).operator));
         }
         else { nodes.add(af.formFunctionTree()); }
       }
 
       // assemble these nodes into a tree.
-      for(int s=3; s>=0; s--) {
+      boolean rhs = false, lhs = false;
+      TreeNode tn, right, left;
+      for(int s=5; s>=0; s--) {
         for(int i=nodes.size()-1; i>=0; i--) {
-          TreeNode tn = nodes.get(i);
+          tn = nodes.get(i);
           if(tn instanceof OpStrength) {
             if(((OpStrength)tn).getStrength()==s) {
               if (!tn.hasLeaves()) {
-                TreeNode right = nodes.get(i+1);
-                TreeNode left = nodes.get(i-1);
+
+                // right sibling
+                rhs = tn.hasRight();
+                right = (rhs ? nodes.get(i+1) : null);
+                if (rhs) { nodes.remove(i+1); }
+
+                // left sibling
+                lhs = tn.hasLeft();
+                left = (lhs ? nodes.get(i-1) : null);
+                if (lhs) { nodes.remove(i-1); }
+
+                // set node content
                 tn.setLeaves(left, right);
-                nodes.remove(i+1);
-                nodes.remove(i-1);
               }
             }
           }
         }
       }
-
       finalNode = nodes.get(0);
     }
     // no children: simple content
@@ -186,4 +212,9 @@ class Operator extends ArithmeticFragment {
   String toString(String pad) {
     return ""+operator;
   }
+}
+
+// special operator class
+class UnaryOperator extends Operator {
+  UnaryOperator(String op) { super(op); }
 }

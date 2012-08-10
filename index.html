@@ -33,15 +33,17 @@
       }
     </script>
     <style>
-    #function { width: 25em; }
+    #function_x, #function_y { width: 23em; }
     #variable { width: 2em; text-align: center; }
     #start, #end, #steps { width: 3em; text-align: center; }
+    #params { margin-bottom: 1em; }
     dl { margin-left: 1em; }
     dl * { line-height: 1.2em; }
     dt { font-family: monospace; }
     dd { margin-top: -1.1em; padding-left: 2em; }
     p { margin: 0; padding: 0; }
     p + p { margin-top: 1.2em; }
+    div canvas { margin-top: 2em; }
     </style>
   </head>
   
@@ -56,8 +58,8 @@
 
     <div style="float:left;">
       <div>
-        Type a function<span id="paramlabel_x"></span>: <input type="text" placeholder="sin(t) - cos(t)" id="function_x">
-        (parametric function: <input type="checkbox" id="parametric" onchange="checkbox(this)">)<br>
+        Type a function<span id="paramlabel_x"></span>: <input type="text" placeholder="sin(t) - cos(t)" id="function_x"><br>
+        parametric function: <input type="checkbox" id="parametric" onchange="checkbox(this)"><br>
         <div id="params" style="display: none">
           Type a function<span id="paramlabel_y"> for y</span>: <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y">
         </div>
@@ -65,17 +67,26 @@
         Range: start = <input type="text" placeholder="0" id="start">
                end = <input type="text" placeholder="6.3" id="end">
                (using <input type="text" placeholder="250" id="steps"> steps)<br>
-        <input type="button" value="Plot function" onclick="plot()"><br>
+        <input type="button" value="Plot function" onclick="plot()">
       </div>
-
-      <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde" style="clear: both; border: 1px solid black;"></canvas>     
+      
+      <div>
+        <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde" style="clear: both; border: 1px solid black;"></canvas>     
+      </div>
     </div>
 
     <div style="float: right; width: 500px; height: 90%; overflow-y: scroll; ">
       <p>The API (<i>a.k.a. "what can I use"</i>):</p>
       
-      <p><strong>operators</strong></p>
-      
+      <p><strong>unary operators</strong></p>
+
+      <dl>
+        <dt>-n</dt><dd>negative n</dd>
+        <dt>n!</dt><dd>factorial of n</dd>
+      </dl>     
+
+      <p><strong>binary operators</strong></p>
+
       <dl>
         <dt>n+m</dt><dd>m added to n</dd>
         <dt>n-m</dt><dd>m subtracted from n</dd>
@@ -85,15 +96,14 @@
         <dt>(…)</dt><dd>explicit grouping</dd>
       </dl>
       
-      <p>There is no -<i>x</i> at the moment, but you can effect
-      the same thing by using 0-<i>x</i>. A bit silly, but it'll do for now.</p>
-      
       <p><strong>operator order</strong></p>
       
       <dl>
-        <dt>1</dt><dd>barring explicit groups, ^ is evaluated first,</dd>
-        <dt>2</dt><dd>then * and / are evaluated, </dd>
-        <dt>3</dt><dd>and then + and - are evaluated.</dd>
+        <dt>1</dt><dd>barring explicit groups, ! is evaluated first,</dd>
+        <dt>2</dt><dd>then ^ is evaluated first,</dd>
+        <dt>3</dt><dd>then the negating - is evaluated,</dd>
+        <dt>4</dt><dd>then * and / are evaluated, </dd>
+        <dt>5</dt><dd>and then, finally, + and - are evaluated.</dd>
       </dl>
       
       <p>In a statement like "t^2 - t + 10", equal order operators
