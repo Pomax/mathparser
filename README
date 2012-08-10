@@ -1,5 +1,70 @@
-A math parser for Processing, written in Processing.
+===========================================================
 
-See mathparser.pde for how to use it.
+ A math parser for Processing (processing.org), written in
+ Processing, usable online through Processing.js
+ (processingjs.org).
 
-THIS CODE IS ESSENTIALLY A FIRST PASS, AND NOT CLEANED UP.
+===========================================================
+(c) Mike "Pomax" Kamermans, 2012
+===========================================================
+
+The API (a.k.a. "what can I use"):
+
+unary operators:
+
+  -n - negative n
+  n! - factorial of n
+
+binary operators:
+
+  n+m - m added to n
+  n-m - m subtracted from n
+  n*m - n multiplied by m
+  n/m - n divided by m
+  n^m - n raised to the power m
+  (…) - explicit grouping
+
+operator order:
+
+  1 - barring explicit groups, ! is evaluated first,
+  2 - then ^ is evaluated,
+  3 - then the negating - is evaluated,
+  4 - then * and / are evaluated,
+  5 - and then, finally, + and - are evaluated.
+
+  In a statement like "t^2 - t + 10", equal order operators
+  are resolved left to right, so this is equivalent to
+  "(t^2 - t) + 10".
+
+constants:
+
+  e  - the natural logarithm base
+  pi - the circumference of a circle with diameter 0.5
+
+functions:
+
+  sin(x)  - the sine function
+  cos(x)  - the cosine function
+  tan(x)  - the tangent function
+  asin(x) - the arcsine function
+  acos(x) - the arccosine function
+  atan(x) - the arctangent function
+  sinh(x) - the hyperbolic sine function
+  cosh(x) - the hyperbolic cosine function
+  tanh(x) - the hyperbolic tangent function
+  ln(x)   - the natural logarithm function (using base e)
+  log(x)  - the decimal logarithm function (using base 10)
+  sqrt(x) - the square root function
+  abs(x)  - the absolute value function
+
+There is no exp function - just use e^x. There are also no
+other exponent function beyond sqrt, which is just something
+that effects x^0.5 — simply use the ^ operator for anything
+involving roots and powers.
+
+Also, if you need a different base logarithmic function,
+use log division: 
+
+  base 2  => log(x)/log(2) or ln(x)/ln(2)
+  base pi => log(x)/log(pi) or ln(x)/ln(pi)
+  etc.

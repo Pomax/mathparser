@@ -19,8 +19,8 @@
         var e = $('#end').value || $('#end').placeholder;
         var steps = $('#steps').value || $('#steps').placeholder;
         
-        fx = fx.replace(/\s+/g,'');
-        fy = fy.replace(/\s+/g,'');
+        fx = fx.replace(/ +/g,'');
+        fy = fy.replace(/ +/g,'');
 
         if(!$('#parametric').checked) { fy = null; }
         
@@ -137,7 +137,7 @@
       
       <div>
         <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde" style="clear: both; border: 1px solid black;"></canvas>     
-        <p>And of course, a <a href="" id="link">link</a> for showing people this graph.</p>
+        <p>And of course, a <a href="" id="link">link</a> to show people this graph!</p>
       </div>
     </div>
 
@@ -156,8 +156,8 @@
       <dl>
         <dt>n+m</dt><dd>m added to n</dd>
         <dt>n-m</dt><dd>m subtracted from n</dd>
-        <dt>n*m</dt><dd>n multiplied bm m</dd>
-        <dt>n/m</dt><dd>n divided bm m</dd>
+        <dt>n*m</dt><dd>n multiplied by m</dd>
+        <dt>n/m</dt><dd>n divided by m</dd>
         <dt>n^m</dt><dd>n raised to the power m</dd>
         <dt>(…)</dt><dd>explicit grouping</dd>
       </dl>
