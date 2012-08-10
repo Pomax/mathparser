@@ -1,15 +1,11 @@
 abstract class TreeNode {
   TreeNode left, right;
   TreeNode(){}
-
   boolean hasRight() { return true; }
   boolean hasLeft() { return true; }
   boolean hasLeaves() { return left!=null && right!=null; }
   void setLeaves(TreeNode l, TreeNode r) { left = l; right = r; }
-
-  double evaluate(String[] var_names, double[] values) {
-    return left.evaluate(var_names, values) + right.evaluate(var_names, values);
-  }
+  double evaluate(String[] var_names, double[] values) { return Double.NaN; }
 }
 
 // ===
@@ -33,7 +29,7 @@ class SimpleNode extends TreeNode {
     for(int i=0, last=var_names.length; i<last; i++) {
       if(is(var_names[i],label)) {
         return values[i]; }}
-    println("ERROR: no variable assignment resolution could be performed for "+label+" in {" + toString() + "} based on ["+var_names+"]");
+//  println("ERROR: no variable assignment resolution could be performed for "+label+" in {" + toString() + "} based on ["+var_names+"]");
     return Double.NaN;
   }
   String toString() { return label; }

@@ -8,7 +8,8 @@
     <script>
       var $ = function(s) { return document.querySelector(s); };
       var y_backup = "",
-          y_placeholder = "cos(t) - sin(t)^2 + sin(t)";
+          y_placeholder = "cos(t) - sin(t)^2 + sin(t)",
+          sketch;
 
       function plot() {
         var fx = $('#function_x').value || $('#function_x').placeholder;
@@ -18,9 +19,19 @@
         var e = $('#end').value || $('#end').placeholder;
         var steps = $('#steps').value || $('#steps').placeholder;
         
-        if(!$('#parametric').checked) { fy = null; }
+        fx = fx.replace(/\s+/g,'');
+        fy = fy.replace(/\s+/g,'');
 
-        Processing.getInstanceById("plot").plot(fx,fy,v,parseFloat(s),parseFloat(e),parseInt(steps));
+        if(!$('#parametric').checked) { fy = null; }
+        
+        if (sketch && sketch.plot) {
+          // build link
+          var link = "?fx="+fx+"&fy="+fy+"&var="+v+"&start="+s+"&end="+e+"&steps="+steps;
+          $('#link').href = link;
+
+          // show sketch
+          sketch.plot(fx,fy,v,parseFloat(s),parseFloat(e),parseInt(steps));
+        }
       }
       
       function checkbox(input) {
@@ -31,6 +42,57 @@
         $('#paramlabel_y').innerHTML = (off ? "" : " for y");
         plot();
       }
+      
+      function bindInput() {
+        document.removeEventListener("DOMContentLoaded",bindInput,false);
+        var inputs = document.querySelectorAll("input[type=text]"),
+            last = inputs.length,
+            i;
+        for(i=0; i<last; i++) {
+          inputs[i].onkeyup = function() { try { plot(); } catch(e) { /* irrelevant */ } };
+        }
+      }
+      
+      function bindPjs() {
+        sketch = Processing.getInstanceById("plot");
+        if(sketch && sketch.plot) { plot(); }
+        else { setTimeout(bindPjs, 250); }
+      }
+      
+      function initialPlot() {
+        bindPjs();
+        document.removeEventListener("DOMContentLoaded",initialPlot,false);
+        var l = window.location.toString(),
+             sep = l.indexOf("?");
+        if(sep > -1) {
+          var terms = l.substring(sep+1).split("&"),
+              last = terms.length,
+              i, pair, property, value;
+          for(i=0; i<last; i++) {
+            pair = terms[i].split("=");
+            property = pair[0];
+            value = pair[1].replace(/%20/g,'');
+            switch(property) {
+              case "fx"    : $('#function_x').value = value; break;
+              case "fy"    : if(value!="null") {
+                                $('#function_y').value = value;
+                                var input = $('#parametric');
+                                input.checked = "checked";
+                                checkbox(input);
+                              } break;
+              case "var"   : $('#variable').value = value; break;
+              case "start" : $('#start').value = value; break;
+              case "end"   : $('#end').value = value; break;
+              case "steps" : $('#steps').value = value; break;
+            }
+          }
+          plot();
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded",bindInput,false);
+      document.addEventListener("DOMContentLoaded",initialPlot,false);
+      
     </script>
     <style>
     #function_x, #function_y { width: 23em; }
@@ -44,13 +106,14 @@
     p { margin: 0; padding: 0; }
     p + p { margin-top: 1.2em; }
     div canvas { margin-top: 2em; }
+    a { text-decoration: none; }
     </style>
   </head>
   
   <body style="vertical-align: top; height: 90%;">
     <a href="https://github.com/pomax/mathparser">
       <img style="position: absolute; float: right; top: 0; right: 0; border: 0; opacity: 0.7;"
-           src="https://a248.e.akamai.net/assets.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67"
+           src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"
            alt="Fork me on GitHub"></a>
   
   
@@ -58,10 +121,12 @@
 
     <div style="float:left;">
       <div>
-        Type a function<span id="paramlabel_x"></span>: <input type="text" placeholder="sin(t) - cos(t)" id="function_x"><br>
+        Type a function<span id="paramlabel_x"></span>:
+        <input type="text" placeholder="sin(t) - cos(t)" id="function_x"><br>
         parametric function: <input type="checkbox" id="parametric" onchange="checkbox(this)"><br>
         <div id="params" style="display: none">
-          Type a function<span id="paramlabel_y"> for y</span>: <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y">
+          Type a function<span id="paramlabel_y"> for y</span>:
+          <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y">
         </div>
         Name of the controlled variable: <input type="text" placeholder="t" id="variable"><br>
         Range: start = <input type="text" placeholder="0" id="start">
@@ -72,6 +137,7 @@
       
       <div>
         <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde" style="clear: both; border: 1px solid black;"></canvas>     
+        <p>And of course, a <a href="" id="link">link</a> for showing people this graph.</p>
       </div>
     </div>
 

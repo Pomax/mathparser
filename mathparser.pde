@@ -41,7 +41,6 @@ void plot(String _functionString, String _controlledVar, double _start, double _
  */
 void plot(String _functionString_x, String _functionString_y, String _controlledVar, double _start, double _end, int _steps) {  
   functionString_x = _functionString_x;
-
   ArithmeticFragment a = new ArithmeticFragment(functionString_x);
   tx = a.formFunctionTree();
 
@@ -122,6 +121,11 @@ double[] drawSingle() {
     domain[bin] = v;
     values[0] = v;
     result = tx.evaluate(var_names, values);
+
+    if(result == Double.NaN) {
+      return;
+    }
+
     results[bin] = result;
     if(result>maxr) { maxr = result; }
     if(result<minr) { minr = result; }
