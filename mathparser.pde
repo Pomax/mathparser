@@ -4,21 +4,11 @@
  *
  ***/
 
+// function variables
+String functionString_x = "sin(t + x)", functionString_y = null;
+FunctionTree tx = (new ArithmeticFragment(functionString_x)).formFunctionTree(), ty = null;
 
-// necessary helper function due to String equivalence vs. identity
-boolean is(String a, String b) { return a.equals(b); }
-
-// PLOTTING PARAMETERS
-//String functionString = "t^3*0 + 3*t^2*(1-t)*90 + 3*t*(1-t)^2*10 + (1-t)^3*100";
-String functionString_x = "sin(t) - cos(t)";
-//String functionString_x = "-3!^2*8";
-String functionString_y = null;
-TreeNode tx = (new ArithmeticFragment(functionString_x)).formFunctionTree(), ty;
-
-String controlledVar = "t";
-double start = 0;
-double end = 6.30;
-int steps = 250;
+// Keep a little bit of border cleared around our graph.
 double padding = 20;
 
 /**
@@ -26,36 +16,8 @@ double padding = 20;
  */
 void setup() {
   size(400,400);
+  clamp("x",10);
   noLoop();
-}
-
-/**
- * set up new plot parameters (normal function)
- */
-void plot(String _functionString, String _controlledVar, double _start, double _end, int _steps) {
-  plot(_functionString, null, _start, _end, _steps);
-}
-
-/**
- * set up new plot parameters (parametric function, 2 dimensions)
- */
-void plot(String _functionString_x, String _functionString_y, String _controlledVar, double _start, double _end, int _steps) {  
-  functionString_x = _functionString_x;
-  ArithmeticFragment a = new ArithmeticFragment(functionString_x);
-  tx = a.formFunctionTree();
-
-  functionString_y = _functionString_y;
-  if(functionString_y!=null) {
-    a = new ArithmeticFragment(functionString_y);
-    ty = a.formFunctionTree();
-  }
-
-  controlledVar = _controlledVar;
-  start = _start;
-  end = _end;
-  steps = _steps;
-
-  redraw();
 }
 
 /**
@@ -63,12 +25,18 @@ void plot(String _functionString_x, String _functionString_y, String _controlled
  */
 void draw() {
   background(255,255,250);
-
   double[] bounds;
-  if(functionString_y==null) { bounds = drawSingle(); }
-  else { bounds = drawParametric(); }
 
-  // y/x axes
+  // See whether we can draw this/these function(s).
+  // If we can't, exit the draw function so we don't clear
+  // the previously drawn result.
+  try {
+    if(functionString_y==null) { bounds = drawSingle(); }
+    else { bounds = drawParametric(); }}
+  catch (UnknownSubstitutionException e) { return; }
+
+
+  // draw the y/x axes
   stroke(0,50);
   line(padding,0,padding,height);
   line(0,height-padding,width,height-padding);
@@ -76,7 +44,7 @@ void draw() {
   line(width-padding,5+height-padding,width-padding,-5+height-padding);
   line(padding-5,padding,padding+5,padding);
   
-  // can we place 0/0?
+  // can we place axes for the 0/0 line(s)?
   stroke(0,20);
   double x, y;
   if((bounds[0]<0 && bounds[2]>0) || (bounds[0]>0 && bounds[2]<0)) {
@@ -86,7 +54,7 @@ void draw() {
     y = map(0,min(bounds[1],bounds[3]),max(bounds[1],bounds[3]),height,0);
     line(0,y,width,y); }
 
-  // axis labels
+  // label the axes
   fill(0);
   textAlign(LEFT);
   text(prec(bounds[1],2), 3, height-padding-3); // miny
@@ -96,16 +64,48 @@ void draw() {
   text(prec(bounds[2],2), width-padding+4, height-3); // maxx
 }
 
-String prec(double d, int l) {
-  double f = pow(10,l);
-  d = round(f*d) / f;
-  return "" + d;
+
+/**
+ * set up new plot parameters (normal function)
+ */
+void plot(String _functionString) { //, String _controlledVar, double _start, double _end, int _steps) {
+  plot(_functionString, null);
 }
 
-double[] drawSingle() {
+/**
+ * set up new plot parameters (parametric function, 2 dimensions)
+ */
+void plot(String _functionString_x, String _functionString_y) { //, String _controlledVar, double _start, double _end, int _steps) {  
+  functionString_x = _functionString_x;
+  ArithmeticFragment a = new ArithmeticFragment(functionString_x);
+  tx = a.formFunctionTree();
+
+  functionString_y = _functionString_y;
+  if(functionString_y!=null) {
+    a = new ArithmeticFragment(functionString_y);
+    ty = a.formFunctionTree(); }
+
+  redraw();
+}
+
+/**
+ * Plot function normally
+ */
+double[] drawSingle() throws UnknownSubstitutionException {
   double step = (end-start)/steps, result;
-  String[] var_names = {controlledVar};
-  double[] values = {0};
+
+  ArrayList<String> keys = new ArrayList<String>(clamps.keySet());
+  String[] var_names = new String[1+keys.size()];
+  var_names[0] = controlledVar;
+  double[] values = new double[1+keys.size()];
+  values[0] = start;
+
+  String key;
+  for(int i=0, last=keys.size(); i<last; i++) {
+    key = keys.get(i);
+    var_names[i+1] = key;
+    values[i+1] = clamps.get(key);
+  }
   
   double segments = (end-start)/step;
   int bins = (int) segments;
@@ -120,13 +120,10 @@ double[] drawSingle() {
     v = start + bin*step;
     domain[bin] = v;
     values[0] = v;
+
     result = tx.evaluate(var_names, values);
-
-    if(result == Double.NaN) {
-      return;
-    }
-
     results[bin] = result;
+
     if(result>maxr) { maxr = result; }
     if(result<minr) { minr = result; }
   }
@@ -157,7 +154,10 @@ double[] drawSingle() {
   return new double[]{start,minr,end,maxr};
 }
 
-double[] drawParametric() {
+/**
+ * Plot parametric function
+ */
+double[] drawParametric() throws UnknownSubstitutionException {
   double step = (end-start)/steps, result;
   String[] var_names = {controlledVar};
   double[] values = {0};
@@ -219,3 +219,83 @@ double[] drawParametric() {
 
   return new double[]{minr_x,minr_y,maxr_x,maxr_y};
 }
+
+
+// ========================================================================
+
+
+/**
+ * Necessary helper function due to String equivalence vs. identity
+ */
+boolean is(String a, String b) { return a.equals(b); }
+
+
+/**
+ * get the free parameters in the function
+ */
+ArrayList<String> getParameters() {
+  ArrayList<String> params = tx.getParameters();
+  if(ty!=null) { 
+    ArrayList<String> yparams = ty.getParameters();
+    for(String s: params) {
+      if(params.contains(s)) continue;
+      params.add(s);
+    }
+  }
+  return params;
+}
+
+/**
+ * round for precision
+ */
+String prec(double d, int l) {
+  double f = pow(10,l);
+  d = round(f*d) / f;
+  return "" + d;
+}
+
+
+// ========================================================================
+
+
+/**
+ * This variable is the plot-controlling variable
+ */
+String controlledVar = "t";
+void setControlled(String c) { 
+  controlledVar = c; 
+  if(clamps.containsKey(c)) {
+    clamps.remove(c);
+  }
+}
+
+/**
+ * Set a non-controlling variable to a specific value
+ */
+HashMap<String,Double> clamps = new HashMap<String,Double>();
+void clamp(String c, double v) { 
+  if(!is(c,controlledVar)) {
+    clamps.put(c,v);
+  }
+}
+
+/**
+ * Control the domain for the plotting variable
+ */
+double start = 0;
+double end = 6.30;
+void setRange(String varName, double _start, double _end) {
+  if(is(varName,controlledVar)) {
+    start = _start;
+    end = _end;
+  }
+}
+
+/**
+ * Control the plotting resolution
+ */
+int steps = 250;
+void setSteps(double plotInterval) {
+  steps = (int) ((end-start)/plotInterval);
+}
+

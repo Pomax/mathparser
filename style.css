@@ -1,0 +1,65 @@
+.clickme {
+  cursor: pointer;
+ }
+
+input[type=radio] {
+  position: relative;
+  top: 0.2em;
+  opacity: 0.5;
+}
+
+input[type=radio]:checked {
+  opacity: 1;
+}
+
+input[type=range] {
+  position: relative;
+  top: 0.6em;
+}
+
+#function_x, #function_y {
+  width: 23em;
+}
+
+#start, #end, #steps {
+  width: 3em;
+  text-align: center;
+}
+
+#params {
+  margin-bottom: 1em;
+}
+
+dl {
+  margin-left: 1em;
+}
+
+dl * {
+  line-height: 1.2em;
+}
+
+dt {
+  font-family: monospace;
+}
+
+dd {
+  margin-top: -1.1em;
+  padding-left: 2em;
+}
+
+p {
+  margin: 0;
+  padding: 0;
+}
+
+p + p {
+  margin-top: 1.2em;
+}
+
+div canvas {
+  margin-top: 2em;
+}
+
+a {
+  text-decoration: none;
+}

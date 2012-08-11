@@ -5,109 +5,8 @@
     <title>A Math Parser for Processing, written in Processing</title>
     <script src="processing.js"></script>
     <script src="Double.js"></script>
-    <script>
-      var $ = function(s) { return document.querySelector(s); };
-      var y_backup = "",
-          y_placeholder = "cos(t) - sin(t)^2 + sin(t)",
-          sketch;
-
-      function plot() {
-        var fx = $('#function_x').value || $('#function_x').placeholder;
-        var fy = $('#function_y').value || $('#function_y').placeholder;
-        var v = $('#variable').value || $('#variable').placeholder;
-        var s = $('#start').value || $('#start').placeholder;
-        var e = $('#end').value || $('#end').placeholder;
-        var steps = $('#steps').value || $('#steps').placeholder;
-        
-        fx = fx.replace(/ +/g,'');
-        fy = fy.replace(/ +/g,'');
-
-        if(!$('#parametric').checked) { fy = null; }
-        
-        if (sketch && sketch.plot) {
-          // build link
-          var link = "?fx="+fx+"&fy="+fy+"&var="+v+"&start="+s+"&end="+e+"&steps="+steps;
-          $('#link').href = link;
-
-          // show sketch
-          sketch.plot(fx,fy,v,parseFloat(s),parseFloat(e),parseInt(steps));
-        }
-      }
-      
-      function checkbox(input) {
-        var on = input.checked, off = !on;
-        $("#params").style.display = (off ? "none" : "block");
-        $('#function_y').placeholder = y_placeholder;
-        $('#paramlabel_x').innerHTML = (off ? "" : " for x");
-        $('#paramlabel_y').innerHTML = (off ? "" : " for y");
-        plot();
-      }
-      
-      function bindInput() {
-        document.removeEventListener("DOMContentLoaded",bindInput,false);
-        var inputs = document.querySelectorAll("input[type=text]"),
-            last = inputs.length,
-            i;
-        for(i=0; i<last; i++) {
-          inputs[i].onkeyup = function() { try { plot(); } catch(e) { /* irrelevant */ } };
-        }
-      }
-      
-      function bindPjs() {
-        sketch = Processing.getInstanceById("plot");
-        if(sketch && sketch.plot) { plot(); }
-        else { setTimeout(bindPjs, 250); }
-      }
-      
-      function initialPlot() {
-        bindPjs();
-        document.removeEventListener("DOMContentLoaded",initialPlot,false);
-        var l = window.location.toString(),
-             sep = l.indexOf("?");
-        if(sep > -1) {
-          var terms = l.substring(sep+1).split("&"),
-              last = terms.length,
-              i, pair, property, value;
-          for(i=0; i<last; i++) {
-            pair = terms[i].split("=");
-            property = pair[0];
-            value = pair[1].replace(/%20/g,'');
-            switch(property) {
-              case "fx"    : $('#function_x').value = value; break;
-              case "fy"    : if(value!="null") {
-                                $('#function_y').value = value;
-                                var input = $('#parametric');
-                                input.checked = "checked";
-                                checkbox(input);
-                              } break;
-              case "var"   : $('#variable').value = value; break;
-              case "start" : $('#start').value = value; break;
-              case "end"   : $('#end').value = value; break;
-              case "steps" : $('#steps').value = value; break;
-            }
-          }
-          plot();
-        }
-      }
-
-      document.addEventListener("DOMContentLoaded",bindInput,false);
-      document.addEventListener("DOMContentLoaded",initialPlot,false);
-      
-    </script>
-    <style>
-    #function_x, #function_y { width: 23em; }
-    #variable { width: 2em; text-align: center; }
-    #start, #end, #steps { width: 3em; text-align: center; }
-    #params { margin-bottom: 1em; }
-    dl { margin-left: 1em; }
-    dl * { line-height: 1.2em; }
-    dt { font-family: monospace; }
-    dd { margin-top: -1.1em; padding-left: 2em; }
-    p { margin: 0; padding: 0; }
-    p + p { margin-top: 1.2em; }
-    div canvas { margin-top: 2em; }
-    a { text-decoration: none; }
-    </style>
+    <script src="javascript.js"></script>
+    <link rel="stylesheet" href="style.css">
   </head>
   
   <body style="vertical-align: top; height: 90%;">
@@ -128,15 +27,15 @@
           Type a function<span id="paramlabel_y"> for y</span>:
           <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y">
         </div>
-        Name of the controlled variable: <input type="text" placeholder="t" id="variable"><br>
-        Range: start = <input type="text" placeholder="0" id="start">
-               end = <input type="text" placeholder="6.3" id="end">
-               (using <input type="text" placeholder="250" id="steps"> steps)<br>
-        <input type="button" value="Plot function" onclick="plot()">
+        <div>
+          <p>Parameters:</p>
+          <div id="variables"></div>
+          <input type="button" value="Plot function" onclick="plot()">
+        </div>
       </div>
       
       <div>
-        <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde" style="clear: both; border: 1px solid black;"></canvas>     
+        <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde mathparser.pde RuntimeException.patch" style="clear: both; border: 1px solid black;"></canvas>     
         <p>And of course, a <a href="" id="link">link</a> to show people this graph!</p>
       </div>
     </div>

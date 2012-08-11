@@ -1,0 +1,2 @@
+// teaches Processing.js that there is a class known as RuntimeException
+class RuntimeException {}

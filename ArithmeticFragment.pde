@@ -72,10 +72,10 @@ class ArithmeticFragment {
     }
 
     // expand the fragment
-    Tape tape = new Tape(fragment);
+    Tape tape = new Tape(fragment, true);
     String buffer = "", token;
     boolean just_inserted = false;
-    while(!tape.eod()) {
+    while(tape.more()) {
       token = tape.next();
       // If we encounter an arithmetic operator,
       // split up the fragment
@@ -124,13 +124,13 @@ class ArithmeticFragment {
   /**
    * form the function tree that maps to this fragment
    */
-  TreeNode formFunctionTree() {
-    TreeNode finalNode;
+  FunctionTree formFunctionTree() {
+    FunctionTree finalNode;
     expand();
 
     if(children.size()>0) {
       // bottom-up conversion
-      ArrayList<TreeNode> nodes = new ArrayList<TreeNode>();
+      ArrayList<FunctionTree> nodes = new ArrayList<FunctionTree>();
       for(int i=0, last=children.size(); i<last; i++) {
         ArithmeticFragment af = children.get(i);
         if(af instanceof UnaryOperator) { 
@@ -144,7 +144,7 @@ class ArithmeticFragment {
 
       // assemble these nodes into a tree.
       boolean rhs = false, lhs = false;
-      TreeNode tn, right, left;
+      FunctionTree tn, right, left;
       for(int s=5; s>=0; s--) {
         for(int i=nodes.size()-1; i>=0; i--) {
           tn = nodes.get(i);

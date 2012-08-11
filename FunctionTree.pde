@@ -1,48 +1,114 @@
-abstract class TreeNode {
-  TreeNode left, right;
-  TreeNode(){}
+/**
+ * A function tree models a mathematical expression
+ * as a tree of operator nodes, with leaves modeling
+ * either plain numbers, or variables that can be
+ * substituted for plain numbers.
+ */
+abstract class FunctionTree {
+  // Any operator has at most two child nodes.
+  FunctionTree left, right;
+
+  // check for right/left children
   boolean hasRight() { return true; }
   boolean hasLeft() { return true; }
+
+  // set the child nodes.
+  void setLeaves(FunctionTree l, FunctionTree r) { left = l; right = r; }
+
+  // check whether this tree has its leaved instantiated.
   boolean hasLeaves() { return left!=null && right!=null; }
-  void setLeaves(TreeNode l, TreeNode r) { left = l; right = r; }
-  double evaluate(String[] var_names, double[] values) { return Double.NaN; }
+
+  /**
+   * Evaluate the mathematica expression modelled
+   * by this tree, by substituting all variables
+   * in the [var_names] array with the corresponding
+   * values in the [values] array.
+   */
+  abstract double evaluate(String[] var_names, double[] values) throws UnknownSubstitutionException;
+  
+  /**
+   * Returns the list of free parameters used in this function
+   */
+  ArrayList<String> getParameters() {
+    ArrayList<String> free = new ArrayList<String>();
+    addParametersFromChild(free, left);
+    addParametersFromChild(free, right);
+    return free;
+  }
+
+  // helper method
+  private void addParametersFromChild(ArrayList<String> list, FunctionTree child) {
+    if(child!=null) {
+      ArrayList<String> free = child.getParameters();
+      for(String s: free) {
+        if(list.contains(s)) continue;
+        list.add(s);
+      }
+    }
+  }
+}
+
+class UnknownSubstitutionException extends RuntimeException {
+  String label, function;
+  String[] var_names;
+  UnknownSubstitutionException(String _label, String _function, String[] _var_names) { label=_label; function=_function; var_names=_var_names; }
+  String toString() { return "no variable assignment resolution could be performed for "+label+" in {" + function + "} based on ["+var_names+"]"; }
 }
 
 // ===
 
+/**
+ * Checks whether a string is a clean number by
+ * checking whether or not it can be parsed by
+ * the Double.parseDouble() method.
+ */
 boolean isNumber(String s) {
   try { Double.parseDouble(s);  return true; }
   catch (Exception e) {} return false;
 }
 
-class NumberNode extends TreeNode {
+/**
+ * 
+ */
+class NumberNode extends FunctionTree {
   double value;
   NumberNode(String value) { this.value = Double.parseDouble(value); }
   double evaluate(String[] var_names, double[] values) { return value; }
   String toString() { return ""+value; }
 }
 
-class SimpleNode extends TreeNode {
+class SimpleNode extends FunctionTree {
   String label;
   SimpleNode(String label) { this.label = label; }
   double evaluate(String[] var_names, double[] values) {
     for(int i=0, last=var_names.length; i<last; i++) {
       if(is(var_names[i],label)) {
         return values[i]; }}
-//  println("ERROR: no variable assignment resolution could be performed for "+label+" in {" + toString() + "} based on ["+var_names+"]");
-    return Double.NaN;
+    throw new UnknownSubstitutionException(label, toString(), var_names);
   }
-  String toString() { return label; }
+  String toString() { return "var:"+label; }
+  ArrayList<String> getParameters() {
+    ArrayList<String> free = new ArrayList<String>();
+    free.add(label);
+    return free;
+  }
 }
 
-class SimpleNode_pi extends SimpleNode {
+class ConstantNode extends SimpleNode {
+  ConstantNode(String label) { super(label); }
+  ArrayList<String> getParameters() {
+    return new ArrayList<String>(); 
+  }
+}
+
+class SimpleNode_pi extends ConstantNode {
   SimpleNode_pi() { super("pi"); }
   double evaluate(String[] var_names, double[] values) {
     return Math.PI;
   }
 }
 
-class SimpleNode_e extends SimpleNode {
+class SimpleNode_e extends ConstantNode {
   SimpleNode_e() { super("e"); }
   double evaluate(String[] var_names, double[] values) {
     return Math.E;
@@ -50,7 +116,7 @@ class SimpleNode_e extends SimpleNode {
 }
 
 // builder function
-TreeNode getSimpleNode(String fragment) {
+FunctionTree getSimpleNode(String fragment) {
   if(is(fragment,"pi"))  return new SimpleNode_pi();
   if(is(fragment,"e"))   return new SimpleNode_e();
   if(isNumber(fragment)) return new NumberNode(fragment);
@@ -61,7 +127,7 @@ TreeNode getSimpleNode(String fragment) {
 
 interface OpStrength { int getStrength(); }
 
-class OperatorNode extends TreeNode implements OpStrength {
+abstract class OperatorNode extends FunctionTree implements OpStrength {
   String operator;
   int strength;
   OperatorNode(String op, int s) { operator = op; strength = s; } 
@@ -101,7 +167,7 @@ class NegativeNode extends OperatorNode {
   NegativeNode() { super("-",3); }
   boolean hasLeft() { return false; }
   boolean hasLeaves() { return right!=null; }
-  void setLeaves(TreeNode l, TreeNode r) { right = r; }
+  void setLeaves(FunctionTree l, FunctionTree r) { right = r; }
   double evaluate(String[] var_names, double[] values) {
     return -right.evaluate(var_names, values);
   }
@@ -118,7 +184,7 @@ class FactorialNode extends OperatorNode {
   FactorialNode() { super("!",5); }
   boolean hasRight() { return false; }
   boolean hasLeaves() { return left!=null; }
-  void setLeaves(TreeNode l, TreeNode r) { left = l; }
+  void setLeaves(FunctionTree l, FunctionTree r) { left = l; }
   double evaluate(String[] var_names, double[] values) {
     double v = left.evaluate(var_names, values);
     return factorial(floor(v));
@@ -132,7 +198,7 @@ class FactorialNode extends OperatorNode {
   }
 }
 // builder function
-TreeNode getOperatorNode(String op) {
+FunctionTree getOperatorNode(String op) {
   if(is(op,"+")) return new AdditionNode();
   if(is(op,"-")) return new SubtractionNode();
   if(is(op,"*")) return new MultiplicationNode();
@@ -141,7 +207,7 @@ TreeNode getOperatorNode(String op) {
   return null;
 }
 
-TreeNode getUnaryOperatorNode(String op) {
+FunctionTree getUnaryOperatorNode(String op) {
   if(is(op,"-")) return new NegativeNode();
   if(is(op,"!")) return new FactorialNode();
   return null;
@@ -149,20 +215,22 @@ TreeNode getUnaryOperatorNode(String op) {
 
 // ===
 
-class FunctionNode extends SimpleNode {
-  TreeNode content;
-  FunctionNode(String label, TreeNode content) {
-    super(label);
-    this.content = content;
+class FunctionNode extends FunctionTree {
+  String label;
+  FunctionTree content;
+  FunctionNode(String label, FunctionTree content) {
+    this.label = label;
+    setLeaves(null,content);
+    this.content = right;
   }
   double evaluate(String[] var_names, double[] values) {
     return Double.NaN;
   }
-  String toString() { return label + "(" + content.toString() + ")"; }
+  String toString() { return "f:" + label + "(" + content.toString() + ")"; }
 }
 
 class FunctionNode_sin extends FunctionNode {
-  FunctionNode_sin(TreeNode content) {
+  FunctionNode_sin(FunctionTree content) {
     super("sin", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -171,7 +239,7 @@ class FunctionNode_sin extends FunctionNode {
 }
 
 class FunctionNode_cos extends FunctionNode {
-  FunctionNode_cos(TreeNode content) {
+  FunctionNode_cos(FunctionTree content) {
     super("cos", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -180,7 +248,7 @@ class FunctionNode_cos extends FunctionNode {
 }
 
 class FunctionNode_tan extends FunctionNode {
-  FunctionNode_tan(TreeNode content) {
+  FunctionNode_tan(FunctionTree content) {
     super("tan", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -189,7 +257,7 @@ class FunctionNode_tan extends FunctionNode {
 }
 
 class FunctionNode_asin extends FunctionNode {
-  FunctionNode_asin(TreeNode content) {
+  FunctionNode_asin(FunctionTree content) {
     super("asin", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -198,7 +266,7 @@ class FunctionNode_asin extends FunctionNode {
 }
 
 class FunctionNode_acos extends FunctionNode {
-  FunctionNode_acos(TreeNode content) {
+  FunctionNode_acos(FunctionTree content) {
     super("acos", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -207,7 +275,7 @@ class FunctionNode_acos extends FunctionNode {
 }
 
 class FunctionNode_atan extends FunctionNode {
-  FunctionNode_atan(TreeNode content) {
+  FunctionNode_atan(FunctionTree content) {
     super("atan", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -216,7 +284,7 @@ class FunctionNode_atan extends FunctionNode {
 }
 
 class FunctionNode_sinh extends FunctionNode {
-  FunctionNode_sinh(TreeNode content) {
+  FunctionNode_sinh(FunctionTree content) {
     super("sinh", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -225,7 +293,7 @@ class FunctionNode_sinh extends FunctionNode {
 }
 
 class FunctionNode_cosh extends FunctionNode {
-  FunctionNode_cosh(TreeNode content) {
+  FunctionNode_cosh(FunctionTree content) {
     super("cosh", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -234,7 +302,7 @@ class FunctionNode_cosh extends FunctionNode {
 }
 
 class FunctionNode_tanh extends FunctionNode {
-  FunctionNode_tanh(TreeNode content) {
+  FunctionNode_tanh(FunctionTree content) {
     super("tanh", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -243,7 +311,7 @@ class FunctionNode_tanh extends FunctionNode {
 }
 
 class FunctionNode_ln extends FunctionNode {
-  FunctionNode_ln(TreeNode content) {
+  FunctionNode_ln(FunctionTree content) {
     super("ln", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -253,7 +321,7 @@ class FunctionNode_ln extends FunctionNode {
 }
 
 class FunctionNode_log extends FunctionNode {
-  FunctionNode_log(TreeNode content) {
+  FunctionNode_log(FunctionTree content) {
     super("log", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -262,7 +330,7 @@ class FunctionNode_log extends FunctionNode {
 }
 
 class FunctionNode_sqrt extends FunctionNode {
-  FunctionNode_sqrt(TreeNode content) {
+  FunctionNode_sqrt(FunctionTree content) {
     super("sqrt", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -271,7 +339,7 @@ class FunctionNode_sqrt extends FunctionNode {
 }
 
 class FunctionNode_abs extends FunctionNode {
-  FunctionNode_abs(TreeNode content) {
+  FunctionNode_abs(FunctionTree content) {
     super("abs", content);
   }
   double evaluate(String[] var_names, double[] values) {
@@ -280,7 +348,7 @@ class FunctionNode_abs extends FunctionNode {
 }
 
 // builder function
-TreeNode getFunctionNode(String functor, TreeNode content) {
+FunctionTree getFunctionNode(String functor, FunctionTree content) {
   if (is(functor,"sin")) return new FunctionNode_sin(content);
   if (is(functor,"cos")) return new FunctionNode_cos(content);
   if (is(functor,"tan")) return new FunctionNode_tan(content);
