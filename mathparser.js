@@ -264,10 +264,12 @@
             create("span").set({"class": "start", id: "start_"+label}).css("cursor","pointer").listen("click", function(){
               MathParser.updateRangeAndValue(label, MathParser.promptFor("#start_"+label, "start value?"), null, null);
             }).html(""+start),
-            create("input").set(range_properties).listen("change", function() {
-              find("#current_"+label).html(Math.round(1000*this.value)/1000);
-              MathParser.updateVariable(label, this, this.value);
-            }),
+            (variable.controlled ? null :
+              create("input").set(range_properties).listen("change", function() {
+                find("#current_"+label).html(Math.round(1000*this.value)/1000);
+                MathParser.updateVariable(label, this, this.value);
+              })
+            ),
             create("span").set({"class": "end", id: "end_"+label}).css("cursor","pointer").listen("click", function(){
               MathParser.updateRangeAndValue(label, null, MathParser.promptFor("#end_"+label, "end value?"), null);
             }).html(""+end),

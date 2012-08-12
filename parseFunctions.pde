@@ -12,6 +12,10 @@ boolean parseFunction(String _functionString) {
  * set up new plot parameters (parametric function, 2 dimensions)
  */
 boolean parseFunctions(String _functionString_x, String _functionString_y) {
+  // preprocess
+  _functionString_x = _functionString_x.replaceAll("\\s","");
+  if (_functionString_y!=null) { _functionString_y = _functionString_y.replaceAll("\\s",""); }
+
   // variable snapshot pre-parse
   ArrayList<String> previous = getParameters();
 

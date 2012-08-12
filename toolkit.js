@@ -26,7 +26,9 @@ window["extend"] = function(e) {
   if(!e.add)
     e.add = function() {
       for(var i=0, last=arguments.length; i<last; i++) {
-        e.appendChild(arguments[i]);
+        if(arguments[i]) {
+          e.appendChild(arguments[i]);
+        }
       }
       return e;
     };

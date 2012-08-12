@@ -68,6 +68,7 @@ a {
   border: 1px solid grey;
   margin: 1em 1em 0 1em;
   padding: 0.2em 0.5em;
+  font-size: 90%;
 }
 
 #parameters .minor {
