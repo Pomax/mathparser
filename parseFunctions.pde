@@ -18,19 +18,13 @@ boolean parseFunctions(String _functionString_x, String _functionString_y) {
   FunctionTree _tx = null, _ty = null;
   if (!is(functionString_x, _functionString_x)) {
     ArithmeticFragment a = new ArithmeticFragment(_functionString_x);
-    if(!a.isBalanced()) { 
-      println("unbalanced function tree _tx");
-      return false;
-    }
+    if(!a.isBalanced()) { return false; }
     _tx = a.formFunctionTree();
   }
 
   if(_functionString_y!=null && !is(functionString_y,_functionString_y)) {
     ArithmeticFragment a = new ArithmeticFragment(_functionString_y);
-    if(!a.isBalanced()) {
-      println("unbalanced function tree _ty");
-      return false;
-    }
+    if(!a.isBalanced()) { return false; }
     _ty = a.formFunctionTree();
   }
 

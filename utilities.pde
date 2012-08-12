@@ -14,20 +14,20 @@ FunctionTree getFunctionTreeY() { return ty; }
 void test() {
   // add variable "t"
   Variable t = new Variable("t");
-  t.setDomain(-10,10,0.5);
+  t.setDomain(-10,10,0.01);
   variables.put(t.label, t);
   variables.setControlled("t");
 
   parseFunction("1/t");
 }
 
-/**
- * Test variable updating
- */
-void mousePressed() {
-  variables.get("t").setDomain(-1,1,0.01);
-  redraw();
-}
+///**
+// * Test variable updating
+// */
+//void mousePressed() {
+//  variables.get("t").setDomain(-1,1,0.01);
+//  redraw();
+//}
 
 /**
  * update a variable's domain, plot resolution and clamped value

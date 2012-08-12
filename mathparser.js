@@ -48,21 +48,23 @@
     if(!find("#parametric").checked) { fy = false; }
     
     var success = false;
-    if(fy===false) { success = sketch.parseFunction(fx); }
-    else { success = sketch.parseFunctions(fx, fy); }
-    if(success) {
-      console.log("MathParser.tryPlot - parseFunction succeeded.");
-      console.log("MathParser.tryPlot - fx: "+fx);
-      console.log("MathParser.tryPlot - fy: "+fy);
-    } else { console.log("parseFunction failed"); return; }
+    try {
+      if(fy===false) { success = sketch.parseFunction(fx); }
+      else { success = sketch.parseFunctions(fx, fy); }
+      if(success) {
+        console.log("MathParser.tryPlot - parseFunction succeeded.");
+        console.log("MathParser.tryPlot - fx: "+fx);
+        console.log("MathParser.tryPlot - fy: "+fy);
+      } else { console.log("parseFunction failed"); return; }
 
-    console.log("MathParser.tryPlot - tx ", sketch.getFunctionTreeX().toString());
-    console.log("MathParser.tryPlot - pre ", sketch.getVariables().getKeys().toArray());
+      console.log("MathParser.tryPlot - tx ", sketch.getFunctionTreeX().toString());
+      console.log("MathParser.tryPlot - pre ", sketch.getVariables().getKeys().toArray());
 
-
-
-    // and finally, let's see it:
-    sketch.redraw();
+      // and finally, let's see it:
+      sketch.redraw();
+    } catch(e) {
+      console.log("error",e);
+    }
   };
 
   /**
@@ -149,8 +151,8 @@
             create("span").set({"class": "value", id: "current_"+label}).html(""+value),
             create("span").set({"class": "debug", id: "debug_"+label}).html("debug").listen("click",function(){
               window["current_variable"] = sketch.getVariables().get(label);
-              console.log("created 'current_variable' variable for inspecting ",current_variable);
-            }));
+              console.log("created a global 'current_variable' for inspecting variable "+label+". content: ",current_variable);
+            }).set("title","refer to the console after clicking debug"));
     return div;
   }
 
