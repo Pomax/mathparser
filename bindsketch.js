@@ -19,10 +19,10 @@ var bindPjs = function() {
 bindPjs();
 
 var sketchLoaded = function(sketch) {
-  console.log("sketch loaded");
+  //console.log("sketch loaded");
 }
 
 var plotFinished = function(sketch) {
-  console.log("plot finished");
+  //console.log("plot finished");
   mathparser.plotFinished(sketch);
 }

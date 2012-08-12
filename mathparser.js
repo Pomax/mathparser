@@ -8,10 +8,24 @@
   window["mathparser"] = MathParser = {};
 
   /**
+   * We all know what this does
+   */
+  MathParser.debug = false;
+  
+  /**
+   * Debug logging
+   */
+  MathParser.log = function(s) {
+    if(MathParser.debug) {
+      console.log(s);
+    }
+  }
+
+  /**
    * parametric or single
    */
   MathParser.checkbox = function(input) {
-    console.log("MathParser.checkbox");
+    MathParser.log("MathParser.checkbox");
     var on = input.checked, off = !on;
     find("#params").css("display", off ? "none" : "block");
     MathParser.tryPlot();
@@ -21,7 +35,7 @@
    * called when the sketch has loaded for the first time
    */
   MathParser.plotFinished = function(p) {
-    console.log("MathParser.plotFinished");
+    MathParser.log("MathParser.plotFinished");
 
     // load the sketch's free variables
     var variables = p.getVariables(),
@@ -41,7 +55,7 @@
    * add listeners to the function text inputs
    */
   MathParser.tryPlot = function(input) {
-    console.log("MathParser.tryPlot");
+    MathParser.log("MathParser.tryPlot");
   
     var fx = find('#function_x').value || find('#function_x').placeholder;
     var fy = find('#function_y').value || find('#function_y').placeholder;
@@ -52,18 +66,18 @@
       if(fy===false) { success = sketch.parseFunction(fx); }
       else { success = sketch.parseFunctions(fx, fy); }
       if(success) {
-        console.log("MathParser.tryPlot - parseFunction succeeded.");
-        console.log("MathParser.tryPlot - fx: "+fx);
-        console.log("MathParser.tryPlot - fy: "+fy);
-      } else { console.log("parseFunction failed"); return; }
+        MathParser.log("MathParser.tryPlot - parseFunction succeeded.");
+        MathParser.log("MathParser.tryPlot - fx: "+fx);
+        MathParser.log("MathParser.tryPlot - fy: "+fy);
+      } else { MathParser.log("parseFunction failed"); return; }
 
-      console.log("MathParser.tryPlot - tx ", sketch.getFunctionTreeX().toString());
-      console.log("MathParser.tryPlot - pre ", sketch.getVariables().getKeys().toArray());
+      MathParser.log("MathParser.tryPlot - tx ", sketch.getFunctionTreeX().toString());
+      MathParser.log("MathParser.tryPlot - pre ", sketch.getVariables().getKeys().toArray());
 
       // and finally, let's see it:
       sketch.redraw();
     } catch(e) {
-      console.log("error",e);
+      MathParser.log("error",e);
     }
   };
 
@@ -71,7 +85,7 @@
    * Add a variable's HTML representation to the page
    */
   MathParser.addVariable = function(variable) {
-    console.log("MathParser.addVariable");
+    MathParser.log("MathParser.addVariable");
     var variables = find('#variables');
     variables.add(MathParser.formVariableDiv(variable));
   }
@@ -80,7 +94,7 @@
    * Get a value by prompting the user
    */
   MathParser.promptFor = function(selector, title) {
-    console.log("MathParser.promptFor");
+    MathParser.log("MathParser.promptFor");
     var newval = prompt(title);
     if(newval==parseFloat(newval)) {
       find(selector).html(newval);
@@ -92,7 +106,7 @@
    * update the range slider and its associated label values
    */
   MathParser.updateRangeAndValue = function(label, min, max, step) {
-    console.log("MathParser.updateRangeAndValue");
+    MathParser.log("MathParser.updateRangeAndValue");
     if(min===null && max==null && step==null) return;
     var cur = find("#current_"+label),
         curval = parseFloat(cur.html()),
@@ -115,9 +129,9 @@
    * update a variable based on its range slider, then redraw the plot
    */
   MathParser.updateVariable = function(label, range, value) {
-    console.log("MathParser.updateVariable");
+    MathParser.log("MathParser.updateVariable");
     var cur = find("#current_"+label);
-    console.log("MathParser.updateVariable - calling sketch.updateVariable");
+    MathParser.log("MathParser.updateVariable - calling sketch.updateVariable");
     sketch.updateVariable(label, parseFloat(range.min), parseFloat(range.max), parseFloat(range.step), parseFloat(value));
     MathParser.tryPlot();
   }
@@ -126,7 +140,7 @@
    * create an HTML element that represents and interacts with this variable
    */
   MathParser.formVariableDiv = function(variable) {
-    console.log("MathParser.formVariableDiv");
+    MathParser.log("MathParser.formVariableDiv");
     var label = variable.label,
         start = variable.start,
         end = variable.end,
@@ -151,7 +165,7 @@
             create("span").set({"class": "value", id: "current_"+label}).html(""+value),
             create("span").set({"class": "debug", id: "debug_"+label}).html("debug").listen("click",function(){
               window["current_variable"] = sketch.getVariables().get(label);
-              console.log("created a global 'current_variable' for inspecting variable "+label+". content: ",current_variable);
+              MathParser.log("created a global 'current_variable' for inspecting variable "+label+". content: ",current_variable);
             }).set("title","refer to the console after clicking debug"));
     return div;
   }

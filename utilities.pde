@@ -14,7 +14,7 @@ FunctionTree getFunctionTreeY() { return ty; }
 void test() {
   // add variable "t"
   Variable t = new Variable("t");
-  t.setDomain(-10,10,0.01);
+  t.setDomain(-10,10,0.05);
   variables.put(t.label, t);
   variables.setControlled("t");
 
