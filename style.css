@@ -63,3 +63,30 @@ div canvas {
 a {
   text-decoration: none;
 }
+
+.variable {
+}
+.variable * {
+  margin: 0 0.5em;
+}
+.variable .label:before {
+  content: "[";
+}
+.variable .label:after {
+  content: "]";
+}
+.variable .start:before {
+  content: "start: ";
+}
+.variable .range {
+  margin: 0 0.5em;
+}
+.variable .end:before {
+  content: "end: ";
+}
+.variable .resolution:before {
+  content: "resolution: ";
+}
+.variable .value:before {
+  content: "current value: ";
+}

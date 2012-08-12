@@ -74,7 +74,7 @@ class NumberNode extends FunctionTree {
   double value;
   NumberNode(String value) { this.value = Double.parseDouble(value); }
   double evaluate(String[] var_names, double[] values) { return value; }
-  String toString() { return ""+value; }
+  String toString() { return "num:"+value; }
 }
 
 class SimpleNode extends FunctionTree {
@@ -362,7 +362,6 @@ FunctionTree getFunctionNode(String functor, FunctionTree content) {
   if (is(functor,"log"))  return new FunctionNode_log(content);
   if (is(functor,"sqrt"))  return new FunctionNode_sqrt(content);
   if (is(functor,"abs"))  return new FunctionNode_abs(content);
-  println("ERROR: could not find object for ["+functor+"]");
   return null;
 }
 

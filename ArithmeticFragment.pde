@@ -1,5 +1,7 @@
 int afCount = 1;
 
+class IllegalFunctionException extends RuntimeException {}
+
 /**
  * An arithmetic fragment models a piece of a function.
  */
@@ -22,7 +24,6 @@ class ArithmeticFragment {
    */
   ArithmeticFragment(String fragment) {
     uid = afCount++;
-    //println("forming "+uid+" for ["+fragment+"]");
     this.fragment = fragment;
   }
   
@@ -124,7 +125,8 @@ class ArithmeticFragment {
   /**
    * form the function tree that maps to this fragment
    */
-  FunctionTree formFunctionTree() {
+  // FIXME: ideally this generates "null" for nonsense functions
+  FunctionTree formFunctionTree() throws IllegalFunctionException {
     FunctionTree finalNode;
     expand();
 
@@ -179,6 +181,7 @@ class ArithmeticFragment {
       finalNode = getFunctionNode(functor, finalNode);
     }
 
+    if(finalNode == null) throw new IllegalFunctionException();
     return finalNode;
   }
 

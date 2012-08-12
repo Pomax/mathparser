@@ -5,19 +5,54 @@
  ***/
 
 // function variables
-String functionString_x = "sin(t + x)", functionString_y = null;
-FunctionTree tx = (new ArithmeticFragment(functionString_x)).formFunctionTree(), ty = null;
+Variables variables = new Variables();
+Variables getVariables() { return variables; }
+
+String functionString_x="", functionString_y="";
+String getFunctionX() { return functionString_x; }
+String getFunctionY() { return functionString_y; }
+
+FunctionTree tx=null, ty=null;
+FunctionTree getFunctionTreeX() { return tx; }
+FunctionTree getFunctionTreeY() { return ty; }
+
+String controlledVar = "";
 
 // Keep a little bit of border cleared around our graph.
 double padding = 20;
+
+// are we running in javascript?
+boolean injs = (""+2.0==""+2);
 
 /**
  * standard setup
  */
 void setup() {
   size(400,400);
-  clamp("x",10);
   noLoop();
+  
+  functionString_x = "x1*t^3 + 3*x2*t^2*(1-t) + 3*x3*t*(1-t)^2 + x4*t^3";
+//  functionString_x = "sin(t) - cos(t)";
+  tx = (new ArithmeticFragment(functionString_x)).formFunctionTree();
+
+//  functionString_y = "cos(t) - sin(t)^2 + sin(t)";
+//  ty = (new ArithmeticFragment(functionString_y)).formFunctionTree();
+
+  // add variable "t"
+  Variable t = new Variable("t");
+  t.setDomain(0,1,0.01);
+  variables.put(t.label, t);
+
+  // add variables "x"
+  Variable x;
+  for(int i=1; i<=4; i++) {
+    x = new Variable("x"+i);
+    x.clamp(random(0,100));
+    variables.put(x.label, x);
+  }
+
+  // make "t" our control variable
+  variables.setControlled("t");
 }
 
 /**
@@ -30,11 +65,8 @@ void draw() {
   // See whether we can draw this/these function(s).
   // If we can't, exit the draw function so we don't clear
   // the previously drawn result.
-  try {
-    if(functionString_y==null) { bounds = drawSingle(); }
-    else { bounds = drawParametric(); }}
+  try { bounds = plotGraph(); }
   catch (UnknownSubstitutionException e) { return; }
-
 
   // draw the y/x axes
   stroke(0,50);
@@ -68,128 +100,97 @@ void draw() {
 /**
  * set up new plot parameters (normal function)
  */
-void plot(String _functionString) { //, String _controlledVar, double _start, double _end, int _steps) {
-  plot(_functionString, null);
+void parseFunction(String _functionString) {
+  functionString_y = "";
+  ty = null;
+  parseFunctions(_functionString, null);
 }
 
 /**
  * set up new plot parameters (parametric function, 2 dimensions)
  */
-void plot(String _functionString_x, String _functionString_y) { //, String _controlledVar, double _start, double _end, int _steps) {  
-  functionString_x = _functionString_x;
-  ArithmeticFragment a = new ArithmeticFragment(functionString_x);
-  tx = a.formFunctionTree();
+void parseFunctions(String _functionString_x, String _functionString_y) {
+  // variable snapshot pre-parse
+  ArrayList<String> previous = getParameters();
+  
+  if (!is(functionString_x, _functionString_x)) {
+    ArithmeticFragment a = new ArithmeticFragment(_functionString_x);
+    FunctionTree _tx = a.formFunctionTree();
+    functionString_x = _functionString_x; 
+    tx = _tx;
+  }
 
-  functionString_y = _functionString_y;
-  if(functionString_y!=null) {
-    a = new ArithmeticFragment(functionString_y);
-    ty = a.formFunctionTree(); }
+  if(_functionString_y!=null && !is(functionString_y,_functionString_y)) {
+    ArithmeticFragment a = new ArithmeticFragment(_functionString_y);
+    FunctionTree _ty = a.formFunctionTree();
+    functionString_y = _functionString_y;
+    ty = _ty;
+  }
 
-  redraw();
+  // variable snapshot post-parse
+  ArrayList<String> current = getParameters();
+  
+  // keep all variables in current, add any
+  // variables that don't alreay exist, and
+  // remove all variables in previous that
+  // are not found in current.
+  for(int s=previous.size()-1; s>=0; s--) {
+    if(current.contains(previous.get(s))) {
+      previous.remove(s); }}
+
+  variables.allocate(current);
+  variables.prune(previous);
 }
 
 /**
- * Plot function normally
+ * request a new plot
  */
-double[] drawSingle() throws UnknownSubstitutionException {
-  double step = (end-start)/steps, result;
-
-  ArrayList<String> keys = new ArrayList<String>(clamps.keySet());
-  String[] var_names = new String[1+keys.size()];
-  var_names[0] = controlledVar;
-  double[] values = new double[1+keys.size()];
-  values[0] = start;
-
-  String key;
-  for(int i=0, last=keys.size(); i<last; i++) {
-    key = keys.get(i);
-    var_names[i+1] = key;
-    values[i+1] = clamps.get(key);
-  }
-  
-  double segments = (end-start)/step;
-  int bins = (int) segments;
-  double[] domain = new double[bins];
-  double[] results = new double[bins];
-  double minr = 999999999;
-  double maxr = -minr;
-  double v;
-
-  // get values
-  for(int bin = 0; bin<bins; bin++) {
-    v = start + bin*step;
-    domain[bin] = v;
-    values[0] = v;
-
-    result = tx.evaluate(var_names, values);
-    results[bin] = result;
-
-    if(result>maxr) { maxr = result; }
-    if(result<minr) { minr = result; }
-  }
-  
-  // plot values, scaled to fit the surface
-  double cx=0, cy=0, prevx=0, prevy=0;
-  for(int bin = 0; bin<bins; bin++) {
-    // first point is a point
-    if(bin==0) {
-      prevx = map(domain[bin],   start,end,  padding,width-padding);
-      prevy = map(results[bin],  minr,maxr,  height-padding,padding);
-      point(prevx, prevy);
-      continue;
-    }
-
-    stroke(0);
-    cx = map(domain[bin],   start,end,  padding,width-padding);
-    cy = map(results[bin],  minr,maxr,  height-padding,padding);
-    point(cx,cy);
-
-    // NOTE: these lines may look completely wrong!
-    stroke(0,0,50,25);
-    line(prevx, prevy, cx, cy);
-    prevx = cx;
-    prevy = cy;
-  }
-  
-  return new double[]{start,minr,end,maxr};
-}
+void plot() { redraw(); }
 
 /**
  * Plot parametric function
  */
-double[] drawParametric() throws UnknownSubstitutionException {
-  double step = (end-start)/steps, result;
-  String[] var_names = {controlledVar};
-  double[] values = {0};
-  
-  double segments = (end-start)/step;
-  int bins = (int) segments;
-  double[] domain = new double[bins];
+double[] plotGraph() throws UnknownSubstitutionException {
+  // this variable will act as our x-axis
+  Variable contr = variables.controlled;
 
-  double[] results_x = new double[bins];
-  double minr_x = 999999999;
-  double maxr_x = -minr_x;
+  // alias its values  
+  double start = contr.start,
+         end = contr.end,
+         resolution = contr.resolution,
+         segments = (end-start)/resolution;
 
-  double[] results_y = new double[bins];
-  double minr_y = minr_x;
-  double maxr_y = maxr_x;
-  
-  double v, vx, vy;
+  // set up the variable substitution arrays
+  NameValueSet nvs = variables.getNameValueSet();
+  String[] var_names = nvs.getNames();
+  double[] values = nvs.getValues();
+  int controlPosition = nvs.getControlPosition();
 
-  // get values
+  int bins = 1 + (int) segments;
+  double[] domain = new double[bins],
+           results_x = new double[bins],
+           results_y = new double[bins];
+  double minr_x = 999999999,
+         minr_y = minr_x,
+         maxr_x = -minr_x,
+         maxr_y = maxr_x,
+         v, vx, vy;
+
+  // calculate graphing values
   for(int bin = 0; bin<bins; bin++) {
-    v = start + bin*step;
+    v = map(bin, 0,bins, start,end);
     domain[bin] = v;
-    values[0] = v;
+    values[controlPosition] = v;
+
     vx = tx.evaluate(var_names, values);
+    if(ty!=null) { vy = ty.evaluate(var_names, values); }
+    else { vy = vx; vx = bin*resolution; }
+
     results_x[bin] = vx;
-
-    vy = ty.evaluate(var_names, values);
-    results_y[bin] = vy;
-
     if(vx>maxr_x) { maxr_x = vx; }
     if(vx<minr_x) { minr_x = vx; }
 
+    results_y[bin] = vy;
     if(vy>maxr_y) { maxr_y = vy; }
     if(vy<minr_y) { minr_y = vy; }
   }
@@ -197,27 +198,33 @@ double[] drawParametric() throws UnknownSubstitutionException {
   // plot values, scaled to fit the surface
   double cx=0, cy=0, prevx=0, prevy=0;
   for(int bin = 0; bin<bins; bin++) {
-    // first point is a point
-    if(bin==0) {
-      prevx = map(results_x[bin],  minr_x,maxr_x,  padding,width-padding);
-      prevy = map(results_y[bin],  minr_y,maxr_y,  height-padding,padding);
-      point(prevx, prevy);
-      continue;
-    }
-
-    stroke(0);
+    // draw point
     cx = map(results_x[bin],  minr_x,maxr_x,  padding,width-padding);
     cy = map(results_y[bin],  minr_y,maxr_y,  height-padding,padding);
-    point(cx,cy);
 
-    // NOTE: these lines may look completely wrong!
-    stroke(0,0,50,25);
-    line(prevx, prevy, cx, cy);
+    // connect the dots, BUT: this can completely misrepresent the graph =)
+    if(bin>0) {
+      strokeWeight(1);    
+      stroke(0,0,100,50);
+      line(prevx, prevy, cx, cy);
+    }
+
+    // draw the dots
+    stroke(0);
+    if(!injs) { strokeWeight(1.9); }
+    point(cx,cy);
     prevx = cx;
     prevy = cy;
   }
 
   return new double[]{minr_x,minr_y,maxr_x,maxr_y};
+}
+
+/**
+ * update a variable's domain, plot resolution and clamped value
+ */
+void updateVariable(String label, double min, double max, double resolution, double value) {
+  variables.update(label, min, max, resolution, value);
 }
 
 
@@ -234,10 +241,12 @@ boolean is(String a, String b) { return a.equals(b); }
  * get the free parameters in the function
  */
 ArrayList<String> getParameters() {
-  ArrayList<String> params = tx.getParameters();
+  ArrayList<String> params = new ArrayList<String>();
+  if(tx==null) return params;
+  params = tx.getParameters();
   if(ty!=null) { 
     ArrayList<String> yparams = ty.getParameters();
-    for(String s: params) {
+    for(String s: yparams) {
       if(params.contains(s)) continue;
       params.add(s);
     }
@@ -256,46 +265,3 @@ String prec(double d, int l) {
 
 
 // ========================================================================
-
-
-/**
- * This variable is the plot-controlling variable
- */
-String controlledVar = "t";
-void setControlled(String c) { 
-  controlledVar = c; 
-  if(clamps.containsKey(c)) {
-    clamps.remove(c);
-  }
-}
-
-/**
- * Set a non-controlling variable to a specific value
- */
-HashMap<String,Double> clamps = new HashMap<String,Double>();
-void clamp(String c, double v) { 
-  if(!is(c,controlledVar)) {
-    clamps.put(c,v);
-  }
-}
-
-/**
- * Control the domain for the plotting variable
- */
-double start = 0;
-double end = 6.30;
-void setRange(String varName, double _start, double _end) {
-  if(is(varName,controlledVar)) {
-    start = _start;
-    end = _end;
-  }
-}
-
-/**
- * Control the plotting resolution
- */
-int steps = 250;
-void setSteps(double plotInterval) {
-  steps = (int) ((end-start)/plotInterval);
-}
-
