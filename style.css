@@ -64,6 +64,16 @@ a {
   text-decoration: none;
 }
 
+#parameters {
+  border: 1px solid grey;
+  margin: 1em 1em 0 1em;
+  padding: 0.2em 0.5em;
+}
+
+#parameters .minor {
+  font-size: 80%;
+}
+
 .variable {
 }
 .variable * {

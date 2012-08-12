@@ -77,10 +77,12 @@ class Variables {
    */
   void update(String label, double min, double max, double resolution, double value) {
     Variable v = active.get(label);
-    if(v!=null) {
-      v.setDomain(min, max, resolution);
-      v.value = value;
+    if(v==null) {
+      v = new Variable(label);
+      put(label, v);
     }
+    v.setDomain(min, max, resolution);
+    v.value = value;
   }
   
   /**

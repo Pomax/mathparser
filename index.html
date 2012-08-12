@@ -25,21 +25,18 @@
     <div style="float:left;">
       <div>
         Type a function<span id="paramlabel_x"></span>:
-        <input type="text" placeholder="1/t" id="function_x" onkeyup="mathparser.tryPlot(this)"><br>
+        <input type="text" placeholder="1/t" id="function_x" onkeyup="mathparser.updateFunction(this)"><br>
 
         parametric function: <input type="checkbox" id="parametric" onchange="mathparser.checkbox(this)"><br>
 
         <div id="params" style="display: none">
           Type a function<span id="paramlabel_y"> for y</span>:
-          <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y" onkeyup="mathparser.tryPlot(this)">
+          <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y" onkeyup="mathparser.updateFunction(this)">
         </div>
 
-        <div>
-          <p>Parameters ("t" is always the control variable):</p>
+        <div id="parameters">
+          <p>Variables <span class='minor'>(<i>t</i> always acts as control variable)</span>:</p>
           <div id="variables"></div>
-          <!--
-          <input type="button" value="Plot function" onclick="plot()">
-          -->
         </div>
       </div>
       
@@ -55,9 +52,7 @@
                                          mathparser.pde
                                          JavaScript.pde
                                          RuntimeException.patch"></canvas>
-        <!--
         <p>And of course, a <a href="" id="link">link</a> to show people this graph!</p>
-        -->
       </div>
     </div>
 

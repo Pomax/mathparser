@@ -10,6 +10,7 @@ var bindPjs = function() {
     if(sketch) {
       find('#function_x').placeholder = sketch.getFunctionX();
       sketch.bindJavaScript(this);
+      MathParser.parseURL();
     }
     else { setTimeout(bindPjs, 250); }
   } else { setTimeout(bindPjs, 250); }
