@@ -90,3 +90,16 @@ a {
 .variable .value:before {
   content: "current value: ";
 }
+.variable .debug {
+  position: relative;
+  top: -0.25em;
+  font-size: 65%;
+  font-variant: small-caps;
+  cursor: pointer;
+}
+.variable .debug:before {
+  content: "(";
+}
+.variable .debug:after {
+  content: ")";
+}

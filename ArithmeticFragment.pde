@@ -27,6 +27,18 @@ class ArithmeticFragment {
     this.fragment = fragment;
   }
   
+  /**
+   * balanced parentheses?
+   */
+  boolean isBalanced() {
+    String[] toks = fragment.split("");
+    int pCount =0;
+    for(int i=0, last=toks.length; i<last; i++) {
+      if(is(toks[i],"(")) pCount++;
+      if(is(toks[i],")")) pCount--; }
+    return pCount==0;
+  }
+  
   // functor(...) fragment?
   private boolean isFunctionWrapped(String fragment) {
     if(fragment.matches("^\\w+\\(.+\\)")) {

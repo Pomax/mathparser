@@ -1,12 +1,24 @@
 /**
- * avoid direct use of a hashmap
+ * We want to avoid directly using a hashmap.
+ * Instead, we create a collection that uses
+ * one internally, with a non-hashmap API.
  */
-class Variables extends HashMap<String,Variable> {
+class Variables {
   Variable controlled = null;
   
   // track all variables ever seen, for Variable recycling
   private HashMap<String, Variable> varpool = new HashMap<String,Variable>();
-  
+
+  // actual "in use" hashmap
+  private HashMap<String, Variable> active = new HashMap<String,Variable>();
+
+  /**
+   * Get a variable
+   */
+  Variable get(String label) {
+    return active.get(label);
+  }
+
   /**
    * Add a variable, but only if its label is non-whitespace.
    */
@@ -16,21 +28,21 @@ class Variables extends HashMap<String,Variable> {
     Variable _tmp = varpool.get(label);
     if(_tmp!=null) { variable = _tmp; }
     else { varpool.put(label, variable); }
-    return super.put(label, variable);
+    return active.put(label, variable);
   }
 
   /**
    * More convenient than the keySet() method.
    */
   ArrayList<String> getKeys() {
-    return new ArrayList<String>(super.keySet());
+    return new ArrayList<String>(active.keySet());
   }
 
   /**
    * More convenient than the values() method.
    */
   ArrayList<Variable> getValues() {
-    return new ArrayList<Variable>(super.values());
+    return new ArrayList<Variable>(active.values());
   }
 
   /**
@@ -42,7 +54,7 @@ class Variables extends HashMap<String,Variable> {
     if(controlled!=null) { 
       controlled.setControlled(false);
     }
-    controlled = super.get(label);
+    controlled = active.get(label);
     controlled.setControlled(true);
   }
   
@@ -57,14 +69,14 @@ class Variables extends HashMap<String,Variable> {
    * Check whether this variable is known
    */
   boolean contains(String label) {
-    return (super.get(label)!= null);
+    return (active.get(label)!= null);
   }
 
   /**
    * Update a variable's properties
    */
   void update(String label, double min, double max, double resolution, double value) {
-    Variable v = super.get(label);
+    Variable v = active.get(label);
     if(v!=null) {
       v.setDomain(min, max, resolution);
       v.value = value;
@@ -77,7 +89,7 @@ class Variables extends HashMap<String,Variable> {
    */
   void allocate(ArrayList<String> allocate) {
     for(String s: allocate) {
-      if(super.get(s)==null) {
+      if(active.get(s)==null) {
         put(s, new Variable(s));
       }
     }
@@ -88,7 +100,7 @@ class Variables extends HashMap<String,Variable> {
    */
   void prune(ArrayList<String> prune) {
     for(String s: prune) {
-      super.remove(s);
+      active.remove(s);
     }
   }
 }

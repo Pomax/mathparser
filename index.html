@@ -25,12 +25,15 @@
     <div style="float:left;">
       <div>
         Type a function<span id="paramlabel_x"></span>:
-        <input type="text" placeholder="sin(t) - cos(t)" id="function_x" onkeyup="mathparser.tryPlot(this)"><br>
+        <input type="text" placeholder="1/t" id="function_x" onkeyup="mathparser.tryPlot(this)"><br>
+
         parametric function: <input type="checkbox" id="parametric" onchange="mathparser.checkbox(this)"><br>
+
         <div id="params" style="display: none">
           Type a function<span id="paramlabel_y"> for y</span>:
           <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y" onkeyup="mathparser.tryPlot(this)">
         </div>
+
         <div>
           <p>Parameters:</p>
           <div id="variables"></div>
@@ -41,7 +44,17 @@
       </div>
       
       <div>
-        <canvas id="plot" data-processing-sources="ArithmeticFragment.pde FunctionTree.pde Tape.pde Variables.pde mathparser.pde RuntimeException.patch" style="clear: both; border: 1px solid black;"></canvas>
+        <canvas id="plot"
+                style="clear: both; border: 1px solid black;"
+                data-processing-sources="ArithmeticFragment.pde
+                                         FunctionTree.pde
+                                         Tape.pde
+                                         Variables.pde
+                                         utilities.pde
+                                         parseFunctions.pde
+                                         mathparser.pde
+                                         JavaScript.pde
+                                         RuntimeException.patch"></canvas>
         <!--
         <p>And of course, a <a href="" id="link">link</a> to show people this graph!</p>
         -->
