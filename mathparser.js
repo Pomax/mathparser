@@ -264,19 +264,17 @@
             create("span").set({"class": "start", id: "start_"+label}).css("cursor","pointer").listen("click", function(){
               MathParser.updateRangeAndValue(label, MathParser.promptFor("#start_"+label, "start value?"), null, null);
             }).html(""+start),
-            (variable.controlled ? null :
-              create("input").set(range_properties).listen("change", function() {
-                find("#current_"+label).html(Math.round(1000*this.value)/1000);
-                MathParser.updateVariable(label, this, this.value);
-              })
-            ),
+            create("input").set(range_properties).listen("change", function() {
+              find("#current_"+label).html(Math.round(1000*this.value)/1000);
+              MathParser.updateVariable(label, this, this.value);
+            }).css("display", (variable.controlled ? "none" : "block")),
             create("span").set({"class": "end", id: "end_"+label}).css("cursor","pointer").listen("click", function(){
               MathParser.updateRangeAndValue(label, null, MathParser.promptFor("#end_"+label, "end value?"), null);
             }).html(""+end),
             create("span").set({"class": "resolution", id: "resolution_"+label}).css("cursor","pointer").listen("click", function(){
               MathParser.updateRangeAndValue(label, null, null, MathParser.promptFor("#resolution_"+label, "plot resolution?"));
             }).html(""+step),
-            create("span").set({"class": "value", id: "current_"+label}).html(""+value),
+            create("span").set({"class": "value", id: "current_"+label}).html(""+value).css("display", (variable.controlled ? "none" : "block")),
             create("span").set({"class": "debug", id: "debug_"+label}).html("debug").listen("click",function(){
               window["current_variable"] = sketch.getVariables().get(label);
               MathParser.log("created a global 'current_variable' for inspecting variable "+label+". content: ",current_variable);

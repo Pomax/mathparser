@@ -75,6 +75,10 @@ a {
   font-size: 80%;
 }
 
+#parameters p {
+  margin-bottom: 0.5em;
+}
+
 .variable {
 }
 .variable * {

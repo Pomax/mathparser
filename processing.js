@@ -1,4 +1,16 @@
+/**
 
+  !!THIS IS A PATCHED VERSION OF THE PROCESSING.JS v1.4.1 DEVELOPMENT BRANCH!!
+ 
+   You really don't want to use this. It contains some patches that may or
+   may not have landed yet, but will all find their way into 1.4.2 or later.
+ 
+   Seriously, don't use this. Go visit processingjs.org instead and download
+   the latest release version instead. It'll make your life easier =)
+ 
+   - Pomax
+
+**/
 (function(window, document, Math, undef) {
 
   var nop = function(){};
