@@ -154,6 +154,14 @@
       find('#variables').clear();
       MathParser.variables = [];
       
+      // move 't' to the front
+      for(i=0; i<last; i++) {
+        variable = values.get(i);
+        if(variable.label=="t") {
+          values.remove(i);
+          values.add(0,variable);
+          break; }}
+
       // display each variable on the page
       // as a controllable entity.
       for(i=0; i<last; i++) {
