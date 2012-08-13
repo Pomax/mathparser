@@ -6,7 +6,7 @@
     <!-- styles -->
     <link rel="stylesheet" href="style.css">
     <!-- scripts -->
-    <script src="toolkit.js"></script>
+    <script src="toolkit-min.js"></script>
     <script src="processing.js"></script>
     <script src="Double.js"></script>
     <script src="bindsketch.js"></script>
@@ -25,13 +25,13 @@
     <div style="float:left;">
       <div>
         Type a function<span id="paramlabel_x"></span>:
-        <input type="text" placeholder="1/t" id="function_x" onkeyup="mathparser.updateFunction(this)"><br>
+        <input type="text" placeholder="1/t" id="function_x" onkeyup="MathParser.updateFunction(this)"><br>
 
-        parametric function: <input type="checkbox" id="parametric" onchange="mathparser.checkbox(this)"><br>
+        parametric function: <input type="checkbox" id="parametric" onchange="MathParser.checkbox(this)"><br>
 
         <div id="params" style="display: none">
           Type a function<span id="paramlabel_y"> for y</span>:
-          <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y" onkeyup="mathparser.updateFunction(this)">
+          <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y" onkeyup="MathParser.updateFunction(this)">
         </div>
 
         <div id="parameters">

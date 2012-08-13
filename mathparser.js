@@ -1,11 +1,21 @@
-// START OF CONDITIONAL LOADING
-(function(){ if (true) {
-// START OF CONDITIONAL LOADING
-
+/**
+ *
+ *  This .js file is part of a demonstrator for the Processing Math parser
+ *  (written in Processing, used online using Processing.js)
+ *
+ *  This file will serve as a basis to create a plotting plugin for use
+ *  on your website. And mine, since I need it for illustrating Bezier
+ *  curve math. I'm already using interactive graphs, but an autoplotter
+ *  would be an excellent addition to the explanations.
+ *
+ *  - Pomax
+ *
+ **/
+(function(url) {
   /**
    * Our math parser object
    */
-  window["mathparser"] = MathParser = {};
+  MathParser = {};
 
   /**
    * We all know what this does
@@ -38,10 +48,10 @@
    * Parse a URL for predefined function arguments
    */
   MathParser.parseURL = function() {
-    var url = window.location.toString();
-    url = url.split("?")[1];
-    if (url) {
-      var pairs = url.split("&"),
+    var cururl = url.toString();
+    cururl = cururl.split("?")[1];
+    if (cururl) {
+      var pairs = cururl.split("&"),
           last = pairs.length,
           pair, property, value, i,
           labels, start, end, resolution, values;
@@ -118,6 +128,7 @@
   MathParser.checkbox = function(input) {
     MathParser.log("MathParser.checkbox");
     var on = input.checked, off = !on;
+    find("#paramlabel_x").html(off ? "" : " for x");
     find("#params").css("display", off ? "none" : "block");
     MathParser.tryPlot();
   };
@@ -267,23 +278,18 @@
             create("input").set(range_properties).listen("change", function() {
               find("#current_"+label).html(Math.round(1000*this.value)/1000);
               MathParser.updateVariable(label, this, this.value);
-            }).css("display", (variable.controlled ? "none" : "block")),
+            }).css("display", (variable.controlled ? "none" : "inline-block")),
             create("span").set({"class": "end", id: "end_"+label}).css("cursor","pointer").listen("click", function(){
               MathParser.updateRangeAndValue(label, null, MathParser.promptFor("#end_"+label, "end value?"), null);
             }).html(""+end),
             create("span").set({"class": "resolution", id: "resolution_"+label}).css("cursor","pointer").listen("click", function(){
               MathParser.updateRangeAndValue(label, null, null, MathParser.promptFor("#resolution_"+label, "plot resolution?"));
             }).html(""+step),
-            create("span").set({"class": "value", id: "current_"+label}).html(""+value).css("display", (variable.controlled ? "none" : "block")),
+            create("span").set({"class": "value", id: "current_"+label}).html(""+value).css("display", (variable.controlled ? "none" : "inline-block")),
             create("span").set({"class": "debug", id: "debug_"+label}).html("debug").listen("click",function(){
               window["current_variable"] = sketch.getVariables().get(label);
               MathParser.log("created a global 'current_variable' for inspecting variable "+label+". content: ",current_variable);
             }).set("title","refer to the console after clicking debug"));
     return div;
   }
-
-
-
-// END OF CONDITIONAL LOADING
-}}());
-// END OF CONDITIONAL LOADING
+}(window.location));

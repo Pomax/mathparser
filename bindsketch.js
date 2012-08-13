@@ -8,8 +8,8 @@ var bindPjs = function() {
   if(Processing) {
     sketch = Processing.getInstanceById("plot");
     if(sketch) {
-      find('#function_x').placeholder = sketch.getFunctionX();
       sketch.bindJavaScript(this);
+      find('#function_x').placeholder = sketch.getFunctionX();
       MathParser.parseURL();
     }
     else { setTimeout(bindPjs, 250); }
@@ -25,5 +25,5 @@ var sketchLoaded = function(sketch) {
 
 var plotFinished = function(sketch) {
   //console.log("plot finished");
-  mathparser.plotFinished(sketch);
+  MathParser.plotFinished(sketch);
 }
