@@ -1,16 +1,19 @@
 <!doctype html>
-<html style="height: 100%;">
+<html style="height: 100%;" class="no-js">
   <head>
     <meta charset="utf-8">
     <title>A Math Parser for Processing, written in Processing, running with Processing.js</title>
     <!-- styles -->
     <link rel="stylesheet" href="style.css">
-    <!-- scripts -->
-    <script src="toolkit-min.js"></script>
-    <script src="processing-1.4.1-patched.js"></script>
-    <script src="Double.js"></script>
-    <script src="bindsketch.js"></script>
-    <script src="mathparser.js"></script>
+    <!-- script -->
+    <script src="js/toolkit.js"></script>
+    <script src="js/processing-1.4.1-patched.js"></script>
+    <script src="js/Double.js"></script>
+    <script src="js/bindsketch.js"></script>
+    <script src="js/mathparser.js"></script>
+    
+    <script src="js/html5slider.js"></script>
+    
   </head>
   
   <body style="vertical-align: top; height: 90%;">
@@ -43,14 +46,14 @@
       <div>
         <canvas id="plot"
                 style="clear: both; border: 1px solid black;"
-                data-processing-sources="ArithmeticFragment.pde
-                                         FunctionTree.pde
-                                         Tape.pde
-                                         Variables.pde
-                                         utilities.pde
-                                         parseFunctions.pde
-                                         mathparser.pde
-                                         JavaScript.pde
+                data-processing-sources="mathparser/ArithmeticFragment.pde
+                                         mathparser/FunctionTree.pde
+                                         mathparser/Tape.pde
+                                         mathparser/Variables.pde
+                                         mathparser/utilities.pde
+                                         mathparser/parseFunctions.pde
+                                         mathparser/mathparser.pde
+                                         mathparser/JavaScript.pde
                                          RuntimeException.patch"></canvas>
         <p>And of course, a <a href="" id="link">link</a> to show people this graph!</p>
       </div>
@@ -126,4 +129,10 @@
     </div>
 
   </body>
+  <script>
+    // If the slider file has loaded then fire the onDomReady event        
+    if("fdSlider" in window && typeof (fdSlider.onDomReady) != "undefined") {
+      try { fdSlider.onDomReady(); } catch(err) {};
+    }
+  </script>
 </html>
