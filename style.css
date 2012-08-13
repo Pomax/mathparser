@@ -83,6 +83,7 @@ a {
 }
 .variable * {
   margin: 0 0.5em;
+  font-size: 85%;
 }
 .variable .label:before {
   content: "[";

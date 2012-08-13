@@ -63,12 +63,12 @@ that effects x^0.5 — simply use the ^ operator for anything
 involving roots and powers.
 
 Also, if you need a different base logarithmic function,
-use log division: 
+use log division:
 
   base 2  => log(x)/log(2) or ln(x)/ln(2)
   base pi => log(x)/log(pi) or ln(x)/ln(pi)
   etc.
-  
+
 ===========================================================
 
   A demonstrator:
@@ -76,12 +76,23 @@ use log division:
     http://processingjs.nihongoresources.com/mathparser
 
   Excellent set of functions/parameters to try:
-  
+
     fx = cos(t)*(1-cos(t)+ln(t+1))
     fy = sin(t)*(1-cos(t)-ln(1+t))
     variable = t
     start = 0
     end = 2000
     resolution = 0.57142857142857142857142857142857
+
+  Or try a cubic Bezier curve:
+
+    fx = x1*t^3+x2*3*t^2*(1-t)+x3*3*t*(1-t)^2+x4*(1-t)^3
+    fy = y1*t^3+y2*3*t^2*(1-t)+y3*3*t*(1-t)^2+y4*(1-t)^3
+    variable = t
+    start = 0
+    end = 1
+    resolution = 0.001
+
+  And then fiddle with the x/y coordinates!
 
 ===========================================================
