@@ -130,6 +130,7 @@
     var on = input.checked, off = !on;
     find("#paramlabel_x").html(off ? "" : " for x");
     find("#params").css("display", off ? "none" : "block");
+    MathParser.functionsChanged = true;
     MathParser.tryPlot();
   };
   
@@ -148,10 +149,13 @@
           values = variables.getValues(),
           i, last=values.size(), variable;
 
-      // display each variable on the page
-      // as a controllable entity.
+      // the function has changed, so clear
+      // all known variables first.
       find('#variables').clear();
       MathParser.variables = [];
+      
+      // display each variable on the page
+      // as a controllable entity.
       for(i=0; i<last; i++) {
         variable = values.get(i);
         MathParser.addVariable(variable);
@@ -199,7 +203,7 @@
       // and finally, let's see it:
       sketch.redraw();
     } catch(e) {
-      MathParser.log("error",e);
+      MathParser.log("error in parseFunction",e);
     }
   };
 

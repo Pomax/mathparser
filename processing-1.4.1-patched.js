@@ -7,6 +7,8 @@
  
    Seriously, don't use this. Go visit processingjs.org instead and download
    the latest release version instead. It'll make your life easier =)
+   
+   To find patches, look for "START OF PATCH" and "END OF PATCH" markers.
  
    - Pomax
 
@@ -483,7 +485,16 @@
     function ArrayList(a) {
       var array;
 
-      if (a && a.toArray) {
+// ==================================
+// *
+// *      START OF PATCH: #1889
+// *   
+// *  if (a instanceof ArrayList) {
+      if(a && a.toArray()) {
+// *
+// *          END OF PATCH
+// *
+// ==================================
         array = a.toArray();
       } else {
         array = [];

@@ -2,8 +2,6 @@
  * set up new plot parameters (normal function)
  */
 boolean parseFunction(String _functionString) {
-  functionString_y = "";
-  ty = null;
   return parseFunctions(_functionString, null);
 }
 
@@ -12,12 +10,13 @@ boolean parseFunction(String _functionString) {
  * set up new plot parameters (parametric function, 2 dimensions)
  */
 boolean parseFunctions(String _functionString_x, String _functionString_y) {
+  // variable snapshot pre-parse
+  ArrayList<String> previous = getParameters();
+
   // preprocess
   _functionString_x = _functionString_x.replaceAll("\\s","");
   if (_functionString_y!=null) { _functionString_y = _functionString_y.replaceAll("\\s",""); }
-
-  // variable snapshot pre-parse
-  ArrayList<String> previous = getParameters();
+  else { functionString_y = ""; ty = null; }
 
   FunctionTree _tx = null, _ty = null;
   if (!is(functionString_x, _functionString_x)) {
@@ -52,7 +51,7 @@ boolean parseFunctions(String _functionString_x, String _functionString_y) {
   for(int s=previous.size()-1; s>=0; s--) {
     if(current.contains(previous.get(s))) {
       previous.remove(s); }}
-
+ 
   variables.allocate(current);
   variables.prune(previous);
   return true;
