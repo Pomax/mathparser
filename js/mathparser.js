@@ -42,7 +42,7 @@
     if(MathParser.debug) {
       console.log(s);
     }
-  }
+  };
   
   /**
    * Parse a URL for predefined function arguments
@@ -92,7 +92,7 @@
         MathParser.tryPlot();
       }
     }
-  }
+  };
   
   /**
    * Generate a URL tail for generating these results
@@ -108,7 +108,7 @@
       resolution.push(e.resolution);
       values.push(Math.round(10000*e.value)/10000);
     }
-    var URL = "?";
+    var URL = "index.html?";
         addFragment = function(name, array, skip) {
           URL += (skip? "":"&") +name+"="+array.join(",");
         };
@@ -120,7 +120,7 @@
     addFragment("resolution", resolution);
     addFragment("values", values);
     return URL;
-  }
+  };
 
   /**
    * parametric or single
@@ -174,7 +174,7 @@
     
     // update the page link
     find("#link").set("href", "./" + MathParser.generateURL());
-  }
+  };
   
   /**
    * Try a plot after noting that the reason
@@ -183,7 +183,7 @@
   MathParser.updateFunction = function(input) {
     MathParser.functionsChanged = true;
     MathParser.tryPlot();
-  }
+  };
 
   /**
    * add listeners to the function text inputs
@@ -214,6 +214,11 @@
       MathParser.log("error in parseFunction",e);
     }
   };
+  
+  /**
+   * event handle after adding a variable
+   */
+  MathParser.onAddVariable = function(){};
 
   /**
    * Add a variable's HTML representation to the page
@@ -221,9 +226,11 @@
   MathParser.addVariable = function(variable) {
     MathParser.log("MathParser.addVariable");
     MathParser.variables.push(variable);
-    var variables = find('#variables');
-    variables.add(MathParser.formVariableDiv(variable));
-  }
+    var variables = find('#variables'),
+        htmlElement = MathParser.formVariableDiv(variable);
+    variables.add(htmlElement);
+    MathParser.onAddVariable(variable, htmlElement);
+  };
   
   /**
    * Get a value by prompting the user
@@ -235,7 +242,7 @@
       find(selector).html(newval);
       return newval;
     }
-  }
+  };
   
   /**
    * update the range slider and its associated label values
@@ -258,7 +265,7 @@
       range.step = step;
     }
     MathParser.updateVariable(label, range, cur.html());
-  }
+  };
   
   /**
    * update a variable based on its range slider, then redraw the plot
@@ -269,7 +276,7 @@
     MathParser.log("MathParser.updateVariable - calling sketch.updateVariable");
     sketch.updateVariable(label, parseFloat(range.min), parseFloat(range.max), parseFloat(range.step), parseFloat(value));
     MathParser.tryPlot();
-  }
+  };
 
   /**
    * create an HTML element that represents and interacts with this variable
@@ -303,5 +310,5 @@
               MathParser.log("created a global 'current_variable' for inspecting variable "+label+". content: ",current_variable);
             }).set("title","refer to the console after clicking debug"));
     return div;
-  }
+  };
 }(window.location));
