@@ -1,0 +1,27 @@
+.ui-slider-handle {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  background-color: #EEE;
+  border-radius: 3px;
+  border: 1px solid black;
+  margin-left: -0.4em;
+  
+  position: relative;
+  top: 0.1em;
+}
+.ui-slider-handle:focus {
+  outline: 0;
+}
+
+.ui-slider-horizontal {
+  width: 14em;
+  line-height: 1em;
+  height: 1em;
+  
+  padding: 0;
+  margin: 0;
+
+  background-image: url("rail.gif");
+  background-position: left center;
+}

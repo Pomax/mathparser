@@ -19,11 +19,6 @@ input[type=radio]:checked {
   opacity: 1;
 }
 
-input[type=range] {
-  position: relative;
-  top: 0.6em;
-}
-
 #function_x, #function_y {
   width: 23em;
 }

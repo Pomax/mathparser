@@ -39,7 +39,7 @@
    * Debug logging
    */
   MathParser.log = function(s) {
-    if(MathParser.debug) {
+    if(MathParser.debug && console.log) {
       console.log(s);
     }
   };
@@ -254,15 +254,15 @@
         curval = parseFloat(cur.html()),
         range = find("#range_"+label);
     if(min!=null) {
-      range.min = min;
+      range.set("min", min);
       if(curval<min) { cur.html(min); }
     }
     if(max!=null) {
-      range.max = max;
+      range.set("max", max);
       if(curval>max) { cur.html(max); }
     }
     if(step!=null) {
-      range.step = step;
+      range.set("step", step);
     }
     MathParser.updateVariable(label, range, cur.html());
   };
@@ -274,7 +274,7 @@
     MathParser.log("MathParser.updateVariable");
     var cur = find("#current_"+label);
     MathParser.log("MathParser.updateVariable - calling sketch.updateVariable");
-    sketch.updateVariable(label, parseFloat(range.min), parseFloat(range.max), parseFloat(range.step), parseFloat(value));
+    sketch.updateVariable(label, parseFloat(range.get("min")), parseFloat(range.get("max")), parseFloat(range.get("step")), parseFloat(value));
     MathParser.tryPlot();
   };
 
@@ -294,10 +294,13 @@
             create("span").set({"class": "start", id: "start_"+label}).css("cursor","pointer").listen("click", function(){
               MathParser.updateRangeAndValue(label, MathParser.promptFor("#start_"+label, "start value?"), null, null);
             }).html(""+start),
+/*
             create("input").set(range_properties).listen("change", function() {
               find("#current_"+label).html(Math.round(1000*this.value)/1000);
               MathParser.updateVariable(label, this, this.value);
             }).css("display", (variable.controlled ? "none" : "inline-block")),
+*/
+            create("div").set(range_properties).css("display", (variable.controlled ? "none" : "inline-block")),
             create("span").set({"class": "end", id: "end_"+label}).css("cursor","pointer").listen("click", function(){
               MathParser.updateRangeAndValue(label, null, MathParser.promptFor("#end_"+label, "end value?"), null);
             }).html(""+end),
