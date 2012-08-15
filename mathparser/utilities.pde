@@ -21,13 +21,6 @@ void test() {
   parseFunction("1/t");
 }
 
-///**
-// * Test variable updating
-// */
-//void mousePressed() {
-//  variables.get("t").setDomain(-1,1,0.01);
-//  redraw();
-//}
 
 /**
  * update a variable's domain, plot resolution and clamped value
