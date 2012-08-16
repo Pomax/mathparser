@@ -1,5 +1,5 @@
 // are we running in javascript?
-boolean injs = (""+2.0==""+2);
+boolean injs = (1.0/2.0==1/2);
 
 // getters
 Variables getVariables() { return variables; }
@@ -7,6 +7,8 @@ String getFunctionX() { return functionString_x; }
 String getFunctionY() { return functionString_y; }
 FunctionTree getFunctionTreeX() { return tx; }
 FunctionTree getFunctionTreeY() { return ty; }
+String getXLaTeX() { return tx.toLaTeX(); }
+String getYLaTeX() { return ty.toLaTeX(); }
 
 /**
  * Test this implementation.
@@ -26,9 +28,7 @@ void test() {
     variables.add(v);
   }
 
-//  parseFunction("area(0, t, 100, t, t^2)");
-
-  parseFunction("sin(t) - a*cos(b*t-c*sin(d*t))");
+  parseFunction("area(0,t,10,t,sin(t) / (1+a*cos(b*t-c*sin(d*t))))");
 }
 
 

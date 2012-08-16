@@ -128,7 +128,7 @@
   MathParser.checkbox = function(input) {
     MathParser.log("MathParser.checkbox");
     var on = input.checked, off = !on;
-    find("#paramlabel_x").html(off ? "" : " for x");
+    //find("#paramlabel_x").html(off ? "" : " for x");
     find("#params").css("display", off ? "none" : "block");
     MathParser.functionsChanged = true;
     MathParser.tryPlot();
@@ -139,6 +139,18 @@
    */
   MathParser.plotFinished = function(p) {
     MathParser.log("MathParser.plotFinished");
+    
+    // show the latex for this thing
+    var hasx = !!p.getFunctionX(),
+        hasy = !!p.getFunctionY();
+    if(hasx) { 
+      MathJax.Hub.Queue(['Typeset',MathJax.Hub,find("#latex_x").html("\\[f(t)"+(hasy? "_x" : '')+"="+p.getXLaTeX()+"\\]")]);
+    }
+    if(hasy) {
+      MathJax.Hub.Queue(['Typeset',MathJax.Hub,find("#latex_y").html("\\[f(t)_y="+p.getYLaTeX()+"\\]")]);
+    } else {
+      MathJax.Hub.Queue(['Typeset',MathJax.Hub,find("#latex_y").html("")]);
+    }
     
     // if the functions changed, we'll need to load
     // the sketch's free variables anew (this will
@@ -310,6 +322,7 @@
             create("span").set({"class": "end", id: "end_"+label}).css("cursor","pointer").listen("click", function(){
               MathParser.updateRangeAndValue(label, null, MathParser.promptFor("#end_"+label, "end value?", this.html()), null);
             }).html(""+end),
+            create("br"),
             create("span").set({"class": "resolution", id: "resolution_"+label}).css("cursor","pointer").listen("click", function(){
               var newvalue = MathParser.promptFor("#resolution_"+label, "plot resolution?", this.html());
               MathParser.updateRangeAndValue(label, null, null, newvalue);

@@ -1,0 +1,288 @@
+<!doctype html>
+<html style="height: 100%;" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <title>A Math Parser for Processing, written in Processing, running with Processing.js</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/slider.css">
+    <!-- resource scripts -->
+    <script src="js/resource/toolkit.js"></script>
+    <script src="js/resource/processing-1.4.1-patched.js"></script>
+    <script src="js/resource/jquery/jquery.js"></script>
+    <script src="js/resource/jquery/jquery-ui.js"></script>
+    <!-- we want to convert LaTeX source into html+css -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        inlineMath: [['\\(','\\)']],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        "HTML-CSS": { availableFonts: ["TeX"] },
+        displayAlign: "left",
+        displayIndent: "0.5em"}
+      );
+    </script>
+    <script src="js/resource/mathjax/MathJax.js"></script>
+    <!-- content scripts -->
+    <script src="js/Double.js"></script>
+    <script src="js/Integer.js"></script>
+    <script src="js/bindsketch.js"></script>
+    <script src="js/saveAs.js"></script>
+    <script src="js/mathparser.js"></script>
+    <script>
+      /*
+        Helper function for dealing with jQuery UI sliders
+      */
+      MathParser.onAddVariable = function(variable, htmlElement) {
+        var label = variable.label,
+            update = function(event, ui) {
+              // This is ridiculous, but necessary: compute slider value manually
+              var head = ui.handle,
+                  base = head.parentNode,
+                  l = $(base).offset().left,
+                  o = $(head).offset().left - l + $(head).width()/2,
+                  w = $(base).width(),
+                  hval = o/w,
+                  min = parseFloat(base.getAttribute("min")),
+                  max = parseFloat(base.getAttribute("max")),
+                  step = parseFloat(base.getAttribute("step")),
+                  iv = 1 / step,
+                  value = Math.round(iv*(min + hval * (max - min)))*step;
+              // even more ridiculousness
+              base.setAttribute("value",value);
+              find("#current_"+label).html(Math.round(1000*value)/1000);
+              MathParser.updateVariable(label, this, value);
+            };
+        $("#range_"+label).slider({change: update, start: update, slide: update, stop: update}).attr("id","range_"+label);
+      };
+    </script>
+  </head>
+  
+  <body style="vertical-align: top; height: 90%;">
+  
+    <link href='http://fonts.googleapis.com/css?family=Acme' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Oleo+Script:400,700' rel='stylesheet' type='text/css'>
+
+    <style>
+      html {
+        background: url("css/drawingboard.gif");
+      }
+      body {
+        width: 800px;
+        margin: auto;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #FFF;
+        border: 1px solid brown;
+        padding: 0.5em;
+      }
+      h1, h2 {
+        margin: 0;
+        text-align: center;
+      }
+      h1 { font-size: 250%; font-family: Acme; }
+      h2 { font-size: 125%; font-family: "Oleo Script"; }
+      .sig { font-family: "Oleo Script"; }
+      p {
+        font-family: "Source Sans Pro";
+      }
+
+      .tab-lip {
+        position: relative;
+        z-order: 2;
+        width: 100px;
+        margin: auto;
+        height: 5px;
+        border: 1px solid black;
+        background-color: white;
+        text-align: center;
+        cursor: pointer;
+      }
+      .lip-up {
+        bottom: -1px;
+        border-radius: 5px 5px 0px 0px;
+        border-bottom: 1px solid grey;
+      }
+      .lip-down {
+        top: 1px;
+        border-radius: 0px 0px 5px 5px;
+        border-top: 1px solid grey;
+      }
+      .template {
+        display: none;
+        overflow-y: auto;
+        background: url("css/linen.gif");
+        cursor: auto;
+      }
+      .tab-lip .template {
+        text-align: left;
+      }
+
+      #additional {
+        text-align: center;
+      }
+
+      .ui-slider-handle {
+        background: rgba(0,110,253,0.6);
+      }
+
+      /* grrr */
+      canvas:focus { outline: 0; }
+
+      input[type=text] {
+        width: 100%;
+      }
+      
+      #plot_panel {
+        float: right;
+        position: relative;
+        top: 75px;
+        margin-top: -75px;
+        padding-bottom: 75px;
+        left: 200px;
+        margin-left: -180px;
+      }
+      
+      aside + p {
+        margin-top: 1em;
+      }
+      
+      .center {
+        text-align: center;
+      }
+      a, a:visited, a:active {
+        color: blue;
+      }
+      
+    </style>
+    <script>
+      function showlips() {
+        var nh = "auto";
+        find(".lip-up").css("height",nh).css("width","350px");
+        find("#function_template").css("height",nh).css("display","block").css("margin-top","0px");
+        find(".lip-down").css("height",nh).css("width","350px");
+        find("#variables_template").css("height",nh).css("display","block").css("margin-bottom","0px");
+      }
+      function closelips() {
+        var nh = "5px";
+        find(".lip-up").css("height",nh).css("width","100px");
+        find("#function_template").css("height",nh).css("display","none");
+        find(".lip-down").css("height",nh).css("width","100px");
+        find("#variables_template").css("height",nh).css("display","none");
+      }
+    </script>
+
+    <article>
+      <header>
+        <h1>The web is great!</h1>
+        <h2>“...too bad that it sucks so much for mathy things”</h2>
+      </header>
+      
+      <aside><div id="plot_panel">
+        <div class="tab-lip lip-up" onclick="showlips()" data-label="▴">
+          <!-- template -->
+          <div class="template" id="function_template">
+
+            <!-- x-function -->
+            <div id="latex_x" onclick="find('#latex_x_input').toggle()" title="click to change"></div>
+            <div id="latex_x_input" style="display: none;">
+              <input type="text" placeholder="1/t" id="function_x" onkeyup="MathParser.updateFunction(this)">
+            </div>
+
+            <!-- y-function -->
+            <div id="params" style="display: none">
+             <div id="latex_y" onclick="find('#latex_y_input').toggle()" title="click to change"></div>
+             <div id="latex_y_input" style="display: none;">
+                <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y" onkeyup="MathParser.updateFunction(this)">
+              </div>
+            </div>
+            
+            <!-- parametric selector + graph link -->
+            <div id="additional">
+              parametric function: <input type="checkbox" id="parametric" onchange="MathParser.checkbox(this)">
+              -
+              <a href="" id="link">link</a>
+            </div>
+
+          </div>
+          <!-- end of template -->
+        </div>
+
+        <!-- demonstrator plot -->
+        <div id="plotting-div" style="width: 400px; height:400px; margin: auto; box-shadow: 2px 2px 10px 0px #000000; padding:0;">
+          <canvas onclick="closelips()"
+          data-processing-sources="mathparser/ArithmeticFragment.pde
+                                           mathparser/FunctionTree.pde
+                                           mathparser/Tape.pde
+                                           mathparser/Variables.pde
+                                           mathparser/utilities.pde
+                                           mathparser/parseFunctions.pde
+                                           mathparser/JavaScript.pde
+                                           mathparser/saveAs.pde
+                                           mathparser/mathparser.pde
+                                           RuntimeException.patch"
+          id="plot" width="400px" height="400px" style="border: 1px solid black; margin: 0 !important;">
+          </canvas>
+        </div>
+
+        <div class="tab-lip lip-down" onclick="showlips()" data-label="▾">
+          <!-- template -->
+          <div class="template" id="variables_template">
+           <div id="variables">
+           </div>
+          </div>
+          <!-- end of template -->        
+        </div>
+      </div></aside>
+
+      <p>I know, right? The funny thing is that t doesn't have to be.
+      After all, it's 2012, we really, really do have the technology.
+      <A href="http://diveintohtml5.info/">HTML</a> and <a href="http://www.alistapart.com/">CSS</a>
+      and <a href="https://developer.mozilla.org/en-US/docs/JavaScript">JavaScript</a> lets us do so much, how hard can it
+      be to just write something that lets you put some math on a page
+      and have it look good, and plot the function. And make that
+      interactive?</p>
+      
+      <p>Turns out: not that hard, someone just has to do it. So I did,
+      and now you can use this on your page too, and maybe we can finally
+      get rid of all the gif-image-for-formulae that still poison the
+      math-oriented web, or &lt;pre&gt; formatted ASCII. I mean, seriously?</p>
+      
+      <p>Take the graph on the right. That's the graph for the following
+      function:</p>
+      
+      <p>\[f(t)=\int_{0}^{t} \frac{sin\left ( t \right ) }{1+a \cdot cos\left
+       ( b \cdot t-c \cdot sin\left ( d \cdot t \right )  \right ) } \frac{d}{dt}
+       , t=[0,2\pi] \]</p>
+
+      <p>Does that function look ugly? No. Because it was converted on-page
+      from the LaTeX code for it. You'll never see that code, you just see
+      a pretty function, thanks to <a href="http://mathjax.org">MathJax</a>.
+      Yeah, that's one of the things we can do these days. Also, see that
+      graph? That's a live plot. Go on, click on the little tabs at the
+      top or bottom, and then do what comes naturally. Done playing? Click
+      the graph to hide all those extra bits.</p>
+      
+      <p class="sig center">OH MY GOD IT'S INTERACTIVE!</p>
+      
+      <p>No but seriously, the best part? Click the function in the top
+      tab. See that input field? Start typing some math yourself, like
+      "sin(t) - cos(t)". Yeah, that's right. You type, it draws. We
+      have the technology. We can do this. What about a parametric 
+      function, with <i>f(x)</i> and <i>f(y)</i> having separate,
+      but same-variabled, function? Just click that checkbox.</p>
+      
+      <p><strong>This is how easy math on the web should be.</strong>
+      Show people what you want them to see, and let them play around
+      with it. You should use this. You should use this, now.</p>
+      
+      <p>“...you're right. Tell me how!” — Go <a href="https://github.com/pomax/mathparser">here</a>, follow the instructions, make great things.</p>
+      <p class="sig">- Pomax</p>
+    </article>
+
+  </body>
+</html>

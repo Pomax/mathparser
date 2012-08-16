@@ -36,6 +36,24 @@
     });
 
     /**
+     * show/hide
+     */
+    bind(e, "show", function(yes) {
+      // make sure we can restore
+      if(!e.cachedDisplay) { e.cachedDisplay = "block"; }
+      // show or hide?
+      if(yes) { e.style.display = e.cachedDisplay; }
+      else { e.cachedDisplay = e.style.display; e.style.display = "none"; }
+      e.shownOnPage = yes;
+      return e;
+    });
+
+    bind(e, "toggle", function() {
+      e.show(e.style.display === "none");
+      return e;
+    });
+
+    /**
      * get/set inner HTML
      */
     bind(e, "html", function(html) {
@@ -131,7 +149,17 @@
   /**
    * quick and dirty element selector
    */
-  window["find"] = function(s) { return extend(document.querySelector(s)); };
+  window["find"] = function(s) { 
+    var nodeset = document.querySelectorAll(s),
+        elements = [];
+    if(nodeset.length==0) return;
+    // single?
+    if(nodeset.length==1) { return extend(nodeset[0]); }
+    // multiple results
+    for(var i=0, last=nodeset.length; i<last; i++) {
+      elements[i] = extend(nodeset[i]); }
+    return elements;
+  };
 
   /**
    * quick and dirty document.createElement()

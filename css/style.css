@@ -9,6 +9,11 @@
   font-size: 100%;
 }
 
+#latex_x ,
+#latex_y {
+  cursor: pointer;
+}
+
 input[type=radio] {
   position: relative;
   top: 0.2em;

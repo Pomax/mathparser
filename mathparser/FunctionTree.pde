@@ -56,6 +56,9 @@ abstract class FunctionTree {
       }
     }
   }
+  
+  abstract String toString();
+  abstract String toLaTeX();
 }
 
 class UnknownSubstitutionException extends RuntimeException {
@@ -87,6 +90,7 @@ class NumberNode extends FunctionTree {
   double evaluate() { return value; }
   double evaluate(double v) { return value; }
   String toString() { return "num:"+value; }
+  String toLaTeX() { return ""+value; }
 }
 
 class SimpleNode extends FunctionTree {
@@ -105,6 +109,7 @@ class SimpleNode extends FunctionTree {
     free.add(label);
     return free;
   }
+  String toLaTeX() { return label; }
 }
 
 class ConstantNode extends SimpleNode {
@@ -153,6 +158,7 @@ class AdditionNode extends OperatorNode {
   double evaluate(String[] var_names, double[] values) {
     return left.evaluate(var_names, values) + right.evaluate(var_names, values);
   }
+  String toLaTeX() { return left.toLaTeX() + "+" + right.toLaTeX(); }
 }
 
 class SubtractionNode extends OperatorNode {
@@ -160,6 +166,7 @@ class SubtractionNode extends OperatorNode {
   double evaluate(String[] var_names, double[] values) {
     return left.evaluate(var_names, values) - right.evaluate(var_names, values);
   }
+  String toLaTeX() { return left.toLaTeX() + "-" + right.toLaTeX(); }
 }
 
 class MultiplicationNode extends OperatorNode {
@@ -167,6 +174,7 @@ class MultiplicationNode extends OperatorNode {
   double evaluate(String[] var_names, double[] values) {
     return left.evaluate(var_names, values) * right.evaluate(var_names, values);
   }
+  String toLaTeX() { return left.toLaTeX() + " \\cdot " + right.toLaTeX(); }
 }
 
 class DivisionNode extends OperatorNode {
@@ -174,6 +182,7 @@ class DivisionNode extends OperatorNode {
   double evaluate(String[] var_names, double[] values) {
     return left.evaluate(var_names, values) / right.evaluate(var_names, values);
   }
+  String toLaTeX() { return "\\frac{"+left.toLaTeX()+"}{"+right.toLaTeX()+"}"; }
 }
 
 class NegativeNode extends OperatorNode {
@@ -184,6 +193,7 @@ class NegativeNode extends OperatorNode {
   double evaluate(String[] var_names, double[] values) {
     return -right.evaluate(var_names, values);
   }
+  String toLaTeX() { return "-"+right.toLaTeX(); }
 }
 
 class PowerNode extends OperatorNode {
@@ -191,6 +201,7 @@ class PowerNode extends OperatorNode {
   double evaluate(String[] var_names, double[] values) {
     return Math.pow(left.evaluate(var_names, values), right.evaluate(var_names, values));
   }
+  String toLaTeX() { return left.toLaTeX()+"^{"+right.toLaTeX()+"}"; }
 }
 
 class FactorialNode extends OperatorNode {
@@ -202,7 +213,7 @@ class FactorialNode extends OperatorNode {
     double v = left.evaluate(var_names, values);
     return factorial(floor(v));
   }
-
+  String toLaTeX() { return left.toLaTeX()+"!"; }
   // This is a fairly dumb implementation,
   // but we'll add a LUT later for efficiency.
   double factorial(double n) {
@@ -229,7 +240,7 @@ FunctionTree getUnaryOperatorNode(String op) {
 
 // ===
 
-class FunctionNode extends FunctionTree {
+abstract class FunctionNode extends FunctionTree {
   String label;
   FunctionTree content;
   FunctionNode(String label, FunctionTree content) {
@@ -241,6 +252,7 @@ class FunctionNode extends FunctionTree {
     return Double.NaN;
   }
   String toString() { return "f:" + label + "(" + content.toString() + ")"; }
+  String toLaTeX() { return label + "\\left ( " + content.toLaTeX() + " \\right ) "; }
 }
 
 class FunctionNode_sin extends FunctionNode {
@@ -350,6 +362,7 @@ class FunctionNode_sqrt extends FunctionNode {
   double evaluate(String[] var_names, double[] values) {
     return Math.sqrt(content.evaluate(var_names, values));
   }
+  String toLaTeX() { return "\\sqrt{" + content.toLaTeX() + "}"; }
 }
 
 class FunctionNode_abs extends FunctionNode {
@@ -359,6 +372,7 @@ class FunctionNode_abs extends FunctionNode {
   double evaluate(String[] var_names, double[] values) {
     return Math.abs(content.evaluate(var_names, values));
   }
+  String toLaTeX() { return "|" + content.toLaTeX() + "|"; }
 }
 
 // builder function
@@ -412,6 +426,7 @@ abstract class AggregateNode extends FunctionNode {
   }
 
   abstract double computeAggregate(double start, double end, int pos, String[] var_names, double[] values);
+  abstract String toLaTeX();
 }
 
 class FunctionNode_sum extends AggregateNode {
@@ -426,6 +441,7 @@ class FunctionNode_sum extends AggregateNode {
       value += content.evaluate(var_names, values); }
     return value;
   }
+  String toLaTeX() { return "\\sum_{n="+arguments.get(0).toLaTeX()+"}^{"+arguments.get(1).toLaTeX()+"} " + content.toLaTeX(); }
 }
 
 class FunctionNode_prod extends AggregateNode {
@@ -440,6 +456,7 @@ class FunctionNode_prod extends AggregateNode {
       value *= content.evaluate(var_names, values); }
     return value;
   }
+  String toLaTeX() { return "\\prod_{"+arguments.get(0).toLaTeX()+"}^{"+arguments.get(1).toLaTeX()+"} " + content.toLaTeX(); }
 }
 
 // A newtonian take on computing a definite integral:
@@ -470,6 +487,7 @@ class FunctionNode_area extends AggregateNode {
     }
     return area;
   }
+  String toLaTeX() { return "\\int_{"+arguments.get(0).toLaTeX()+"}^{"+arguments.get(1).toLaTeX()+"} " + content.toLaTeX() + " \\frac{d}{dt}"; }
 }
 
 boolean isAggregateNode(String functor) {

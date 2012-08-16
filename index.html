@@ -6,16 +6,23 @@
     <!-- styles -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/slider.css">
-    <!-- shims -->
-<!--
-    <script src="js/shim/modernizr.js"></script>
-    <script>Modernizr.load([{test: Modernizr.inputtypes.range, nope: ['js/shim/html5slider.js']}]);</script>
--->
     <!-- resource scripts -->
     <script src="js/resource/toolkit.js"></script>
     <script src="js/resource/processing-1.4.1-patched.js"></script>
     <script src="js/resource/jquery/jquery.js"></script>
     <script src="js/resource/jquery/jquery-ui.js"></script>
+    <!-- we want to convert LaTeX source into html+css -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        inlineMath: [['\\(','\\)']],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        "HTML-CSS": { availableFonts: ["TeX"] },
+        displayAlign: "left",
+        displayIndent: "2em"}
+      );
+    </script>
+    <script src="js/resource/mathjax/MathJax.js"></script>
     <!-- content scripts -->
     <script src="js/Double.js"></script>
     <script src="js/Integer.js"></script>
@@ -59,15 +66,20 @@
 
     <div style="float:left;">
       <div>
-        Type a function<span id="paramlabel_x"></span>:
-        <input type="text" placeholder="1/t" id="function_x" onkeyup="MathParser.updateFunction(this)"><br>
-
-        parametric function: <input type="checkbox" id="parametric" onchange="MathParser.checkbox(this)"><br>
+        <div id="latex_x" onclick="find('#latex_x_input').toggle()" title="click to change"></div>
+        <div id="latex_x_input" style="display: none;">
+          Type a function<span id="paramlabel_x"></span>:
+          <input type="text" placeholder="1/t" id="function_x" onkeyup="MathParser.updateFunction(this)">
+        </div>
 
         <div id="params" style="display: none">
-          Type a function<span id="paramlabel_y"> for y</span>:
-          <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y" onkeyup="MathParser.updateFunction(this)">
+         <div id="latex_y" onclick="find('#latex_y_input').toggle()" title="click to change"></div>
+         <div id="latex_y_input" style="display: none;">
+            Type a function<span id="paramlabel_y"> for y</span>:
+            <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y" onkeyup="MathParser.updateFunction(this)">
+          </div>
         </div>
+        <div>parametric function: <input type="checkbox" id="parametric" onchange="MathParser.checkbox(this)"></div>
 
         <div id="parameters">
           <p>Variables <span class='minor'>(<i>t</i> always acts as control variable)</span>:</p>
@@ -163,11 +175,11 @@
       <p><strong>special functions</strong></p>
       
       <dl id="special-functions">
-        <dt>sum(&lt;start&gt;,&lt;end&gt;,<i>f(t)</i>)</dt><dd>Calculate the sum of a function <i>f(t)</i> that uses a special summation
+        <dt>sum(&lt;start&gt;,&lt;end&gt;,<i>f(t)</i>)</dt><dd>Calculate the sum of a function <i>f(t)</i> that uses a special iterator
                                                                variable <i>n</i>, summed for terms <i>n</i> = start to <i>n</i> = end.
                                                                Start and end can be either plain numbers, or variables, in which
                                                                case they are controllable just like any other variable.</dd>
-        <dt>prod(&lt;start&gt;,&lt;end&gt;,<i>f(t)</i>)</dt><dd>Calculate the product of a function <i>f(t)</i> that uses a special summation
+        <dt>prod(&lt;start&gt;,&lt;end&gt;,<i>f(t)</i>)</dt><dd>Calculate the product of a function <i>f(t)</i> that uses a special iterator
                                                                variable <i>n</i>, multiplied for terms <i>n</i> = start to <i>n</i> = end.
                                                                Start and end can be either plain numbers, or variables, in which
                                                                case they are controllable just like any other variable.</dd>
@@ -176,18 +188,22 @@
                                                                interval <i>controlled variable</i> = &lt;start&gt; to &lt;end&gt;, using
                                                                &lt;steps&gt; slices. Note that <i>area</i> requires its own controlled
                                                                variable - there are no restrictions on which variables may or may not be
-                                                               used in this context. Note that, depending on the width of the sliced used
+                                                               used in this context. Note that, depending on the number of slices used
                                                                to obtain an area summation, your result may be off by a significant amount.</dd>
       </dl>                                                               
 
       <p>Note that if these functions are given plain number start and end values,
-      their result will be the same number for all values that the controlled variable
-      <i>t</i> takes on. Simply using <i>sum(0,4,t)</i>, without a term <i>n</i>, is
-      the same as the function <i>5*t</i>. However, you may use variables as interval
-      markers, so <i>sin(0,t,t)</i> will actually produce something meaningful.
-      Note that, at the moment, double and triple sums etc. are problematic because
-      <i>sum</i>, as well as <i>prod</i>, will use <i>n</i> as iterator variable.
-      Even if it's already in use.</p>
+      their result will simply act as a scaling factor (multiplicative for <i>sum</i>,
+      power for <i>prod</i>). Using <i>sum(0,4,t)</i>, without a term <i>n</i> to
+      control the summation function is equivalent to using the function <i>5*t</i>.
+      However, you may use variables as interval markers, so <i>sin(0,t,t)</i> will
+      actually produce something meaningful. For <i>sum</i> and <i>prod</i> the
+      iteration always uses integer numbers, even if you give it decimals. The
+      </i>area</i> function can deal with decimal intervals.</p>
+      
+      <p><strong>warning</strong>: double and triple sums etc. are problematic 
+      at the moment, because the iterator variable <i>n</i> is used regardless
+      of whether it is already assigned some value. This will be fixed in a later version.</p>
     </div>
 
   </body>

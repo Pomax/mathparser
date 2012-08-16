@@ -24,6 +24,5 @@ var sketchLoaded = function(sketch) {
 }
 
 var plotFinished = function(sketch) {
-  //console.log("plot finished");
   MathParser.plotFinished(sketch);
 }

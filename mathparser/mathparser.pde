@@ -62,6 +62,9 @@ void draw() {
   text(prec(bounds[0],2), padding+5, height-3); // minx
   textAlign(RIGHT);
   text(prec(bounds[2],2), width-padding+4, height-3); // maxx
+  textAlign(CENTER);
+  text((ty==null ? variables.controlled.label : "x") + " →", width/2, height-5);
+  text("↑\n" + (ty==null ? "f(t)" : "y"), padding/2, height/2);
   
   if(js!=null) { js.plotFinished(this); }
 }

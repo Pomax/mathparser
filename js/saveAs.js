@@ -10,9 +10,10 @@ function saveImageAs(sketch) {
 
   // create overlay image element!
   var img = new Image();
+  // FIXME: not the best way to position =)
   img.style.position = "absolute";
-  img.style.top = bbox.top + "px";
-  img.style.left = bbox.left + "px";
+  img.style.top = "7px";
+
   img.style.border = cv.style.border;
   img.style.margin = cv.style.margin;
   img.style.padding = cv.style.padding;
@@ -30,5 +31,5 @@ function saveImageAs(sketch) {
 
   // make the magic happen:
   img.src = bindata;
-  document.body.appendChild(img);
+  cv.parentNode.appendChild(img);
 }
