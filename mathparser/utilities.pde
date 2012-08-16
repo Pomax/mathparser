@@ -14,11 +14,21 @@ FunctionTree getFunctionTreeY() { return ty; }
 void test() {
   // add variable "t"
   Variable t = new Variable("t");
-  t.setDomain(-10,10,0.05);
-  variables.put(t.label, t);
+  t.setDomain(0,6.283,0.05);
+  variables.add(t);
   variables.setControlled("t");
 
-  parseFunction("1/t");
+  String[] labels = {"a", "b", "c", "d"};
+  for(String s: labels) {
+    Variable v = new Variable(s);
+    v.setDomain(0,1,0.01);
+    v.value = 1;
+    variables.add(v);
+  }
+
+//  parseFunction("area(0, t, 100, t, t^2)");
+
+  parseFunction("sin(t) - a*cos(b*t-c*sin(d*t))");
 }
 
 
@@ -33,7 +43,11 @@ void updateVariable(String label, double min, double max, double resolution, dou
 /**
  * Necessary helper function due to String equivalence vs. identity
  */
-boolean is(String a, String b) { return a.equals(b); }
+boolean is(String a, String b) {
+  if(a==null && b==null) return true;
+  if(a==null) return false;
+  if(b==null) return false;
+  return a.equals(b); }
 
 
 /**

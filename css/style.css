@@ -49,6 +49,10 @@ dd {
   padding-left: 2em;
 }
 
+#special-functions dd {
+  padding-left: 10em;
+}
+
 p {
   margin: 0;
   padding: 0;

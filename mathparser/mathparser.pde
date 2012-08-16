@@ -70,6 +70,7 @@ void draw() {
  * Plot parametric function
  */
 double[] plotGraph() throws UnknownSubstitutionException {
+
   // this variable will act as our x-axis
   Variable contr = variables.controlled;
 

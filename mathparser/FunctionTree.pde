@@ -27,6 +27,16 @@ abstract class FunctionTree {
   abstract double evaluate(String[] var_names, double[] values) throws UnknownSubstitutionException;
   
   /**
+   * for numbers/constants
+   */
+  double evaluate() { return Double.NaN; }
+
+  /**
+   * for variables
+   */
+  double evaluate(double v) { return Double.NaN; }
+
+  /**
    * Returns the list of free parameters used in this function
    */
   ArrayList<String> getParameters() {
@@ -37,7 +47,7 @@ abstract class FunctionTree {
   }
 
   // helper method
-  private void addParametersFromChild(ArrayList<String> list, FunctionTree child) {
+  protected void addParametersFromChild(ArrayList<String> list, FunctionTree child) {
     if(child!=null) {
       ArrayList<String> free = child.getParameters();
       for(String s: free) {
@@ -74,6 +84,8 @@ class NumberNode extends FunctionTree {
   double value;
   NumberNode(String value) { this.value = Double.parseDouble(value); }
   double evaluate(String[] var_names, double[] values) { return value; }
+  double evaluate() { return value; }
+  double evaluate(double v) { return value; }
   String toString() { return "num:"+value; }
 }
 
@@ -86,6 +98,7 @@ class SimpleNode extends FunctionTree {
         return values[i]; }}
     throw new UnknownSubstitutionException(label, toString(), var_names);
   }
+  double evaluate(double v) { return v; }
   String toString() { return "var:"+label; }
   ArrayList<String> getParameters() {
     ArrayList<String> free = new ArrayList<String>();
@@ -197,6 +210,7 @@ class FactorialNode extends OperatorNode {
     return n * factorial(n-1);
   }
 }
+
 // builder function
 FunctionTree getOperatorNode(String op) {
   if(is(op,"+")) return new AdditionNode();
@@ -367,3 +381,108 @@ FunctionTree getFunctionNode(String functor, FunctionTree content) {
 
 // ===
 
+/**
+ * Very special function node.
+ */
+abstract class AggregateNode extends FunctionNode {
+  ArrayList<FunctionTree> arguments = new ArrayList<FunctionTree>();
+  double startValue=0;
+  AggregateNode(String label, ArrayList<String> _arguments, FunctionTree content, double _startValue) {
+    super(label, content);
+    for(String arg: _arguments) { arguments.add(getSimpleNode(arg)); }
+    startValue = _startValue;
+  }
+
+  ArrayList<String> getParameters() {
+    ArrayList<String> free = new ArrayList<String>();
+    for(FunctionTree arg: arguments) { addParametersFromChild(free, arg); }
+    addParametersFromChild(free, content);
+    return free;
+  }
+
+  double evaluate(String[] var_names, double[] values) {
+    // augment variable names to include the special var "n"
+    int pos, last = var_names.length;
+    for(pos=0; pos<last; pos++) { if(is(var_names[pos],"n")) break; }
+    // calculate the start/end integer values
+    double s = arguments.get(0).evaluate(var_names,values),
+           e = arguments.get(1).evaluate(var_names,values);
+    // and compute aggregate
+    return computeAggregate(s,e,pos,var_names,values);
+  }
+
+  abstract double computeAggregate(double start, double end, int pos, String[] var_names, double[] values);
+}
+
+class FunctionNode_sum extends AggregateNode {
+  FunctionNode_sum(ArrayList<String> arguments, FunctionTree content) {
+    super("sum", arguments, content, 0);
+  }
+  double computeAggregate(double start, double end, int pos, String[] var_names, double[] values) {
+    double value = startValue;
+    int s = (int)round(start), e = (int)round(end);
+    for(int i=s; i<=e; i++) {
+      values[pos] = i;
+      value += content.evaluate(var_names, values); }
+    return value;
+  }
+}
+
+class FunctionNode_prod extends AggregateNode {
+  FunctionNode_prod(ArrayList<String> arguments, FunctionTree content) {
+    super("prod", arguments, content, 1);
+  }
+  double computeAggregate(double start, double end, int pos, String[] var_names, double[] values) {
+    double value = startValue;
+    int s = (int)round(start), e = (int)round(end);
+    for(int i=s; i<=e; i++) {
+      values[pos] = i;
+      value *= content.evaluate(var_names, values); }
+    return value;
+  }
+}
+
+// A newtonian take on computing a definite integral:
+// compute the area under a function by adding rectangle areas.
+class FunctionNode_area extends AggregateNode {
+  FunctionNode_area(ArrayList<String> arguments, FunctionTree content) {
+    super("area", arguments, content, 0);
+  }
+  double computeAggregate(double s, double e, int pos, String[] var_names, double[] values) {
+    double start = s,
+           end = e,
+           step = arguments.get(2).evaluate(),
+           slen = (end-start)/step;
+    String varName = arguments.get(3).getParameters().get(0);
+    
+    // Use a different double[] for value passing inside this function,
+    // as we'll likely be messing with the controlled variable "t"
+    double[] new_values = new double[values.length];
+    arrayCopy(values,0,new_values,0,values.length);
+    for(pos=0; pos<values.length; pos++) {
+      if(is(var_names[pos],varName)) break; }
+
+    // compute area by strip-rect-addition
+    double area = startValue;
+    for(double v=start+slen/2; v<end; v+=slen) {
+      new_values[pos] = v;
+      area += slen * content.evaluate(var_names, new_values);
+    }
+    return area;
+  }
+}
+
+boolean isAggregateNode(String functor) {
+  if (is(functor,"sum")) return true;
+  if (is(functor,"prod")) return true;
+  if (is(functor,"area")) return true;
+  return false;
+}
+
+// builder function
+FunctionTree getAggregateNode(String functor, ArrayList<String> arguments, FunctionTree content) {
+  if (is(functor,"sum")) return new FunctionNode_sum(arguments, content);
+  if (is(functor,"prod")) return new FunctionNode_prod(arguments, content);
+  if (is(functor,"area")) return new FunctionNode_area(arguments, content);
+  return null;
+}

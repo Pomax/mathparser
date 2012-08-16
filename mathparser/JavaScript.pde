@@ -9,8 +9,9 @@ abstract class Window {
 abstract class JavaScript {
   Window window;
   Console console; 
-  abstract void sketchLoaded(PApplet sketch);  
-  abstract void plotFinished(PApplet sketch);  
+  abstract void sketchLoaded(PApplet sketch);
+  abstract void plotFinished(PApplet sketch);
+  abstract void saveImageAs(PApplet sketch);
 }
 
 JavaScript js = null;

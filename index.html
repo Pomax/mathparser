@@ -18,9 +18,10 @@
     <script src="js/resource/jquery/jquery-ui.js"></script>
     <!-- content scripts -->
     <script src="js/Double.js"></script>
+    <script src="js/Integer.js"></script>
     <script src="js/bindsketch.js"></script>
-    <script src="js/mathparser.js"></script>
     <script src="js/saveAs.js"></script>
+    <script src="js/mathparser.js"></script>
     <script>
       MathParser.onAddVariable = function(variable, htmlElement) {
         var label = variable.label,
@@ -83,9 +84,9 @@
                                          mathparser/Variables.pde
                                          mathparser/utilities.pde
                                          mathparser/parseFunctions.pde
-                                         mathparser/mathparser.pde
                                          mathparser/JavaScript.pde
                                          mathparser/saveAs.pde
+                                         mathparser/mathparser.pde
                                          RuntimeException.patch"></canvas>
         <p>Right click to save the image, or use this <a href="" id="link">link</a> to show people this graph!</p>
       </div>
@@ -158,6 +159,35 @@
       <p>Also, if you need a different base logarithmic function,
       use log division: base 2 is log(x)/log(2), base pi is log(x)/log(pi),
       etc.</p>
+
+      <p><strong>special functions</strong></p>
+      
+      <dl id="special-functions">
+        <dt>sum(&lt;start&gt;,&lt;end&gt;,<i>f(t)</i>)</dt><dd>Calculate the sum of a function <i>f(t)</i> that uses a special summation
+                                                               variable <i>n</i>, summed for terms <i>n</i> = start to <i>n</i> = end.
+                                                               Start and end can be either plain numbers, or variables, in which
+                                                               case they are controllable just like any other variable.</dd>
+        <dt>prod(&lt;start&gt;,&lt;end&gt;,<i>f(t)</i>)</dt><dd>Calculate the product of a function <i>f(t)</i> that uses a special summation
+                                                               variable <i>n</i>, multiplied for terms <i>n</i> = start to <i>n</i> = end.
+                                                               Start and end can be either plain numbers, or variables, in which
+                                                               case they are controllable just like any other variable.</dd>
+        <dt>area(&lt;start&gt;,&lt;end&gt;,&lt;steps&gt;,&lt;controlled variable&gt;,<i>f(t)</i>)</dt><dd><br>
+                                                               Calculate the area between a function <i>f(t)</i> and the axis for t over
+                                                               interval <i>controlled variable</i> = &lt;start&gt; to &lt;end&gt;, using
+                                                               &lt;steps&gt; slices. Note that <i>area</i> requires its own controlled
+                                                               variable - there are no restrictions on which variables may or may not be
+                                                               used in this context. Note that, depending on the width of the sliced used
+                                                               to obtain an area summation, your result may be off by a significant amount.</dd>
+      </dl>                                                               
+
+      <p>Note that if these functions are given plain number start and end values,
+      their result will be the same number for all values that the controlled variable
+      <i>t</i> takes on. Simply using <i>sum(0,4,t)</i>, without a term <i>n</i>, is
+      the same as the function <i>5*t</i>. However, you may use variables as interval
+      markers, so <i>sin(0,t,t)</i> will actually produce something meaningful.
+      Note that, at the moment, double and triple sums etc. are problematic because
+      <i>sum</i>, as well as <i>prod</i>, will use <i>n</i> as iterator variable.
+      Even if it's already in use.</p>
     </div>
 
   </body>

@@ -7,6 +7,9 @@ class IllegalFunctionException extends RuntimeException {}
  */
 class ArithmeticFragment {
   private int uid = -1;
+  
+  // only used for summation
+  private ArrayList<String> arguments = new ArrayList<String>();
 
   // As an object, there is either a simple string
   // descriptor for this fragment, or a set of
@@ -82,6 +85,20 @@ class ArithmeticFragment {
     if (isParensWrapped(fragment)) {
       unwrapped = true;
       fragment = fragment.substring(1,fragment.length()-1);
+    }
+    // is this a summation?
+    if(isAggregateNode(functor) && !is(fragment.trim(),"")) {
+      int pos = fragment.indexOf(",");
+      int capPos = fragment.indexOf("(");
+      if(capPos==-1) { capPos = fragment.length(); }
+      String arg = "";
+      while(pos>-1 && pos<capPos) {
+        arg = fragment.substring(0,pos);
+        fragment = fragment.replaceAll("^"+arg+",","");
+        capPos--;
+        arguments.add(arg);
+        pos = fragment.indexOf(",");
+      }
     }
 
     // expand the fragment
@@ -159,7 +176,7 @@ class ArithmeticFragment {
       // assemble these nodes into a tree.
       boolean rhs = false, lhs = false;
       FunctionTree tn, right, left;
-      for(int s=5; s>=0; s--) {
+      for(int s=6; s>=0; s--) {
         for(int i=nodes.size()-1; i>=0; i--) {
           tn = nodes.get(i);
           if(tn instanceof OpStrength) {
@@ -190,7 +207,8 @@ class ArithmeticFragment {
     
     // if this is function-wrapped, wrap it.
     if(functor != null && functor != "") {
-      finalNode = getFunctionNode(functor, finalNode);
+      FunctionTree aggregator = getAggregateNode(functor, arguments, finalNode);
+      finalNode = (aggregator==null) ? getFunctionNode(functor, finalNode) : aggregator;
     }
 
     if(finalNode == null) throw new IllegalFunctionException();

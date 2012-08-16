@@ -18,11 +18,12 @@ class Variables {
   Variable get(String label) {
     return active.get(label);
   }
-
+  
   /**
    * Add a variable, but only if its label is non-whitespace.
    */
-  Variable put(String label, Variable variable) {
+  Variable add(Variable variable) {
+    String label = variable.label;
     if(!label.matches("^[a-zA-Z0-9]+$")) return null;
     // already in the varpool? recycle
     Variable _tmp = varpool.get(label);
@@ -79,7 +80,7 @@ class Variables {
     Variable v = active.get(label);
     if(v==null) {
       v = new Variable(label);
-      put(label, v);
+      add(v);
     }
     v.setDomain(min, max, resolution);
     v.value = value;
@@ -92,7 +93,7 @@ class Variables {
   void allocate(ArrayList<String> allocate) {
     for(String s: allocate) {
       if(active.get(s)==null) {
-        put(s, new Variable(s));
+        add(new Variable(s));
       }
     }
   }

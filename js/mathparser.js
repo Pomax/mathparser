@@ -157,6 +157,8 @@
       // move 't' to the front
       for(i=0; i<last; i++) {
         variable = values.get(i);
+
+        // "t" is auto-controlled
         if(variable.label=="t") {
           values.remove(i);
           values.add(0,variable);
@@ -166,6 +168,8 @@
       // as a controllable entity.
       for(i=0; i<last; i++) {
         variable = values.get(i);
+        // do not allow "n" to be controlled
+        if(variable.label=="n") continue;
         MathParser.addVariable(variable);
       }
 
@@ -235,9 +239,9 @@
   /**
    * Get a value by prompting the user
    */
-  MathParser.promptFor = function(selector, title) {
+  MathParser.promptFor = function(selector, title, value) {
     MathParser.log("MathParser.promptFor");
-    var newval = prompt(title);
+    var newval = prompt(title, value);
     if(newval==parseFloat(newval)) {
       find(selector).html(newval);
       return newval;
@@ -292,22 +296,26 @@
     var div = create("div").set({"class": "variable", id: "variable_"+label});
     div.add(create("span").set("class","label").html(label),
             create("span").set({"class": "start", id: "start_"+label}).css("cursor","pointer").listen("click", function(){
-              MathParser.updateRangeAndValue(label, MathParser.promptFor("#start_"+label, "start value?"), null, null);
+              MathParser.updateRangeAndValue(label, MathParser.promptFor("#start_"+label, "start value?", this.html()), null, null);
             }).html(""+start),
 /*
+            // plain <input type="range">
             create("input").set(range_properties).listen("change", function() {
               find("#current_"+label).html(Math.round(1000*this.value)/1000);
               MathParser.updateVariable(label, this, this.value);
             }).css("display", (variable.controlled ? "none" : "inline-block")),
 */
+            // jQuery slider
             create("div").set(range_properties).css("display", (variable.controlled ? "none" : "inline-block")),
             create("span").set({"class": "end", id: "end_"+label}).css("cursor","pointer").listen("click", function(){
-              MathParser.updateRangeAndValue(label, null, MathParser.promptFor("#end_"+label, "end value?"), null);
+              MathParser.updateRangeAndValue(label, null, MathParser.promptFor("#end_"+label, "end value?", this.html()), null);
             }).html(""+end),
             create("span").set({"class": "resolution", id: "resolution_"+label}).css("cursor","pointer").listen("click", function(){
-              MathParser.updateRangeAndValue(label, null, null, MathParser.promptFor("#resolution_"+label, "plot resolution?"));
+              var newvalue = MathParser.promptFor("#resolution_"+label, "plot resolution?", this.html());
+              MathParser.updateRangeAndValue(label, null, null, newvalue);
             }).html(""+step),
             create("span").set({"class": "value", id: "current_"+label}).html(""+value).css("display", (variable.controlled ? "none" : "inline-block")),
+            // this element can be used to write debug information in the console
             create("span").set({"class": "debug", id: "debug_"+label}).html("debug").listen("click",function(){
               window["current_variable"] = sketch.getVariables().get(label);
               MathParser.log("created a global 'current_variable' for inspecting variable "+label+". content: ",current_variable);
