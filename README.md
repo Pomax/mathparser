@@ -45,11 +45,60 @@ in the github repository, or you can checkout the fixed Pjs
 branch and then build that yourself. I don't recommend, for
 obvious reasons (i.e., way too much work for a temporary fix).
 
-With MathJax and Processing.js in hand, your basic page is
-going to look like this:
+**Note that I'm still in the process of cleaning up the packaging here
+(if you want to help making it use [Require.js](http://requirejs.org/)
+and making it literally a drop-in thing, please, fork. Do it. Send me
+a pull request. Oh my dog, we're going to make the web so much better)**
+
+With MathJax and Processing.js in hand, you can set up a basic page
+by just copy-pasting the following code:
 
 ``` html
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>My wonderfully mathy page</title>
 
+    <!-- styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/slider.css">
+
+    <!-- resource scripts -->
+    <script src="js/resource/toolkit.js"></script>
+    <script src="js/resource/processing-1.4.1-patched.js"></script>
+    <script src="js/resource/jquery/jquery.js"></script>
+    <script src="js/resource/jquery/jquery-ui.js"></script>
+
+    <!-- we want to convert LaTeX source into html+css -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        inlineMath: [['\\(','\\)']],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        "HTML-CSS": { availableFonts: ["TeX"] },
+        displayAlign: "left",
+        displayIndent: "0.5em"}
+      );
+    </script>
+    <script src="js/resource/mathjax/MathJax.js"></script>
+
+    <!-- content scripts -->
+    <script src="js/Double.js"></script>
+    <script src="js/Integer.js"></script>
+    <script src="js/bindsketch.js"></script>
+    <script src="js/saveAs.js"></script>
+    <script src="js/mathparser.js"></script>
+
+  </head>
+  
+  <body style="vertical-align: top; height: 90%;">
+    <article>
+      <header><h1>Check out this awesome page</h1></header>
+      <p>Looking pretty good!</p>
+    </article>
+  </body>
+</html>
 ```
 
 Making MathParser do something
