@@ -80,7 +80,7 @@ class Variables {
     Variable v = active.get(label);
     if(v==null) {
       v = new Variable(label);
-      add(v);
+      this.add(v);
     }
     v.setDomain(min, max, resolution);
     v.value = value;

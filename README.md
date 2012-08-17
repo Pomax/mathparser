@@ -51,7 +51,10 @@ and making it literally a drop-in thing, please, fork. Do it. Send me
 a pull request. Oh my dog, we're going to make the web so much better)**
 
 With MathJax and Processing.js in hand, you can set up a basic page
-by just copy-pasting the following code:
+by just copy-pasting the following code (No, I know this isn't clean
+boilerplate with Modernizr, etc. Do you think that's a quick and easy
+thing to do? Seriously, do a quick fork, fix it, do a pull request back
+and I will merge it in without question):
 
 ``` html
 <!doctype html>
@@ -61,46 +64,98 @@ by just copy-pasting the following code:
     <title>My wonderfully mathy page</title>
 
     <!-- styles -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/slider.css">
+    <link rel="stylesheet" href="css/mathparser.css">
 
-    <!-- resource scripts -->
-    <script src="js/resource/toolkit.js"></script>
-    <script src="js/resource/processing-1.4.1-patched.js"></script>
-    <script src="js/resource/jquery/jquery.js"></script>
-    <script src="js/resource/jquery/jquery-ui.js"></script>
-
-    <!-- we want to convert LaTeX source into html+css -->
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        extensions: ["tex2jax.js"],
-        inlineMath: [['\\(','\\)']],
-        jax: ["input/TeX", "output/HTML-CSS"],
-        "HTML-CSS": { availableFonts: ["TeX"] },
-        displayAlign: "left",
-        displayIndent: "0.5em"}
-      );
-    </script>
-    <script src="js/resource/mathjax/MathJax.js"></script>
-
-    <!-- content scripts -->
-    <script src="js/Double.js"></script>
-    <script src="js/Integer.js"></script>
-    <script src="js/bindsketch.js"></script>
-    <script src="js/saveAs.js"></script>
-    <script src="js/mathparser.js"></script>
-
+    <!-- mathparser library. For now, this must be <head> -->
+    <script src="js/mathparser.js"></script>    
   </head>
   
-  <body style="vertical-align: top; height: 90%;">
+  <body>
     <article>
       <header><h1>Check out this awesome page</h1></header>
       <p>Looking pretty good!</p>
+      
+      <!-- This will contain the mathparser code: -->
+      <aside id="my_mathparser_aside">
+        <!-- And then we inject the mathparser to the article. This is why we load mathparser.js in <head> -->
+        <script>MathParser.loadBlock("my_mathparser_aside", {...});</script>      
+      </aside>
     </article>
   </body>
 </html>
 ```
 
+The {...} there indicates that we can pass along an init object,
+containing the initial graph information. You don't have to
+pass it along, but it helps, and here's what you can stick in it:
+
+Anyway, the mathparser block:
+
+``` javascript
+{
+  fx: "valid math string for f(t), or f(t)_x if parametric",
+  fy: "valid math string for f(t)_y (forces parametric)",
+  variables: [
+    variable,
+    ...
+  ]
+}
+```
+
+Each variable should consist of:
+
+``` javascript
+{
+  label: "name of the variable",
+  start: <start value for variable's domain>,
+  end: <endvalue for variable's domain>,
+  resolution: <stepping value>,
+  value: <preassigned value>
+}
+```
+
+If you're passing in a function, you also usually
+want to pass at least one variable in the variables
+array, namely the variable with label "t". This will
+always be treated as the controll (graphing) variable.
+
+
 Making MathParser do something
 ------------------------------
 
+Making the math parser show a new (set of) function(S)
+with associated variable(s) is as easy as initial setup:
+
+```
+  MathParser.setNewData({...});
+```
+
+Wait, what's "toolkit.js" that this uses?
+-----------------------------------------
+
+A quick and dirty toolkit for html element things. It's
+basically a chaining shorthand function lib. It adds:
+
+  window.extend(e) - toolkit-extend element
+  window.find(selector) - CSS selector finding
+  window.create(tag) - short for window.extend(document.createElement(tag));
+
+extended elements have these extra functions:
+
+  e.css(prop,val) - set property
+  e.css(prop) - if prop is a string, get value. if object, set multiple CSS props
+  e.toggle() - show/hide
+  e.show(boolean) - explitic toggle
+  e.html() - get inner html
+  e.html(code) - set inner html
+  e.add(element) - shorthand for appendChild
+  e.remove(element) - shorthand for removeChild
+  e.clear() - remove all children
+  e.get(prop) - get an attribute value
+  e.set(prop) - set an attribute
+  e.listenOnce(eventname, function) - one-time event listening
+  e.listen(eventname, function) - continuous event listening  
+
+Why not use jQuery!?! Because what I need to do doesn't use
+the power of jQuery, so I don't want to load 100k of JS that
+I'm not going to use. This is less than 4kb.

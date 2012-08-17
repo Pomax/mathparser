@@ -1,0 +1,217 @@
+.ui-slider-handle {
+  display: inline-block;
+  position: relative;
+  top: 0.1em;
+  margin-left: -0.4em !important;
+
+  width: 0.8em;
+  height: 0.8em;
+
+  background: rgba(0,110,253,0.6);
+  border-radius: 3px;
+  border: 1px solid black;
+}
+
+.ui-slider-handle:focus {
+  outline: 0;
+}
+
+.ui-slider-horizontal {
+  width: 14em;
+  line-height: 1em;
+  height: 1em;
+  
+  padding: 0;
+  margin: 0;
+
+  background-image: url("rail.gif");
+  background-position: left 45%;
+  
+  cursor: pointer;
+}
+
+html {
+  background: url("drawingboard.gif");
+  margin:0;
+  padding:0;
+}
+
+body {
+  width: 800px;
+  margin: auto;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFF;
+  border: 1px solid brown;
+  padding: 0.5em;
+  font-size: 15px;
+}
+
+h1, h2 {
+  margin: 0;
+  text-align: center;
+}
+
+h1 { font-size: 250%; font-family: Acme; }
+
+h2 { font-size: 125%; font-family: "Oleo Script"; }
+
+.sig { font-family: "Oleo Script"; }
+
+p {
+  font-family: "Source Sans Pro";
+}
+
+.tab-lip {
+  position: relative;
+  z-order: 2;
+  width: 100px;
+  margin: auto;
+  height: 5px;
+  border: 1px solid black;
+  background-color: white;
+  text-align: center;
+  cursor: pointer;
+}
+.lip-up {
+  bottom: -1px;
+  border-radius: 5px 5px 0px 0px;
+  border-bottom: 1px solid grey;
+}
+.lip-down {
+  top: 1px;
+  border-radius: 0px 0px 5px 5px;
+  border-top: 1px solid grey;
+}
+.template {
+  display: none;
+  overflow-y: auto;
+  background: url("linen.gif");
+  cursor: auto;
+}
+.tab-lip .template {
+  text-align: left;
+}
+
+#additional {
+  text-align: center;
+}
+
+/* grrr */
+canvas:focus { outline: 0; }
+
+input[type=text] {
+  width: 100%;
+}
+
+#plot_panel {
+  float: right;
+  position: relative;
+  top: 75px;
+  margin-top: -75px;
+  padding-bottom: 75px;
+  left: 200px;
+  margin-left: -180px;
+}
+
+aside + p {
+  margin-top: 1em;
+}
+
+.center {
+  text-align: center;
+}
+a, a:visited, a:active {
+  color: blue;
+}
+
+
+#function_x, #function_y {
+  width: 23em;
+}
+
+#start, #end, #steps {
+  width: 3em;
+  text-align: center;
+}
+
+#params {
+  margin-bottom: 1em;
+}
+
+.clickme {
+  cursor: pointer;
+ }
+
+#function_x,
+#function_y {
+  font-family: Times;
+  font-style: italic;
+  font-size: 100%;
+}
+
+#latex_x ,
+#latex_y {
+  cursor: pointer;
+}
+
+
+
+#parameters {
+  border: 1px solid grey;
+  margin: 1em 1em 0 1em;
+  padding: 0.2em 0.5em;
+  font-size: 90%;
+}
+
+#parameters .minor {
+  font-size: 80%;
+}
+
+#parameters p {
+  margin-bottom: 0.5em;
+}
+
+.variable {
+}
+.variable * {
+  margin: 0 0.5em;
+  font-size: 85%;
+}
+.variable .label:before {
+  content: "[";
+}
+.variable .label:after {
+  content: "]";
+}
+.variable .start:before {
+  content: "start: ";
+}
+.variable .range {
+  margin: 0 0.5em;
+}
+.variable .end:before {
+  content: "end: ";
+}
+.variable .resolution:before {
+  content: "resolution: ";
+}
+.variable .value:before {
+  content: "current value: ";
+}
+.variable .debug {
+  position: relative;
+  top: -0.25em;
+  font-size: 65%;
+  font-variant: small-caps;
+  cursor: pointer;
+}
+.variable .debug:before {
+  content: "(";
+}
+.variable .debug:after {
+  content: ")";
+}

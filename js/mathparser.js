@@ -12,6 +12,20 @@
  *
  **/
 (function(url) {
+
+  // load required scripts
+  (function(){
+    var loadScript = function(src) {
+      var _node = document.createElement("script");
+      _node.src = "js/"+src;
+      document.head.appendChild(_node);}
+    loadScript("resource/toolkit.js");
+    loadScript("Double.js");
+    loadScript("Integer.js");
+    loadScript("saveAs.js");
+    loadScript("shim/massaging.js");
+  }());
+
   /**
    * Our math parser object
    */
@@ -44,6 +58,26 @@
     }
   };
   
+  /**
+   * If built from a block call, this variable
+   * will contain the data to load once the
+   * sketch comes online.
+   */
+  MathParser.initialData = false;
+  
+  /**
+   * Load the MathParser block where called
+   */
+  MathParser.loadBlock = function(id, data) {
+    MathParser.initialData = (data ? data:false);
+    // load template
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET","mathparser.tpl.html",false);
+    xhr.send(null);
+    var content = xhr.responseText;
+    document.getElementById(id).innerHTML = content;
+  }
+
   /**
    * Parse a URL for predefined function arguments
    */
@@ -84,7 +118,7 @@
           e = (end) ? parseFloat(end[i]) : 1;
           r = (resolution) ? parseFloat(resolution[i]) : 0.1;
           v = (values) ? parseFloat(values[i]) : s;
-          sketch.updateVariable(l, s, e, r, v);
+          MathParser.sketch.updateVariable(l, s, e, r, v);
         }
       }
       
@@ -112,8 +146,8 @@
         addFragment = function(name, array, skip) {
           URL += (skip? "":"&") +name+"="+array.join(",");
         };
-    addFragment("fx", [sketch.getFunctionX()], true);
-    addFragment("fy", [sketch.getFunctionY()]);
+    addFragment("fx", [MathParser.sketch.getFunctionX()], true);
+    addFragment("fy", [MathParser.sketch.getFunctionY()]);
     addFragment("labels", labels);
     addFragment("start", start);
     addFragment("end", end);
@@ -139,7 +173,27 @@
    */
   MathParser.plotFinished = function(p) {
     MathParser.log("MathParser.plotFinished");
-    
+/*
+    // If we had pending data, immediately tell the
+    // sketch to update according to this new data.
+    if(MathParser.initialData !== false) {
+      var d = MathParser.initialData;
+      // functions?
+      if(d.fx) { find('#function_x').value = d.fx; }
+      if(d.fy) { find('#function_y').value = d.fy; }
+      // variables?
+      if(d.variables) {
+        var i, last=d.variables.length, v;
+        for(i=0; i<last; i++) {
+          v = d.variables[i];
+          if(v.label) {
+            p.updateVariable(v.label, v.start, v.end, v.resolution, (v.value?v.value:0)); }}}
+      // let's try this
+      MathParser.initialData = false;
+      MathParser.tryPlot();
+      return;
+    }
+*/
     // show the latex for this thing
     var hasx = !!p.getFunctionX(),
         hasy = !!p.getFunctionY();
@@ -212,23 +266,19 @@
     if(!find("#parametric").checked) { fy = false; }
     
     var success = false;
-    try {
-      if(fy===false) { success = sketch.parseFunction(fx); }
-      else { success = sketch.parseFunctions(fx, fy); }
-      if(success) {
-        MathParser.log("MathParser.tryPlot - parseFunction succeeded.");
-        MathParser.log("MathParser.tryPlot - fx: "+fx);
-        MathParser.log("MathParser.tryPlot - fy: "+fy);
-      } else { MathParser.log("parseFunction failed"); return; }
+    if(fy===false) { success = MathParser.sketch.parseFunction(fx); }
+    else { success = MathParser.sketch.parseFunctions(fx, fy); }
+    if(success) {
+      MathParser.log("MathParser.tryPlot - parseFunction succeeded.");
+      MathParser.log("MathParser.tryPlot - fx: "+fx);
+      MathParser.log("MathParser.tryPlot - fy: "+fy);
+    } else { MathParser.log("parseFunction failed"); return; }
 
-      MathParser.log("MathParser.tryPlot - tx ", sketch.getFunctionTreeX().toString());
-      MathParser.log("MathParser.tryPlot - pre ", sketch.getVariables().getKeys().toArray());
+    MathParser.log("MathParser.tryPlot - tx ", MathParser.sketch.getFunctionTreeX().toString());
+    MathParser.log("MathParser.tryPlot - pre ", MathParser.sketch.getVariables().getKeys().toArray());
 
-      // and finally, let's see it:
-      sketch.redraw();
-    } catch(e) {
-      MathParser.log("error in parseFunction",e);
-    }
+    // and finally, let's see it:
+    MathParser.sketch.redraw();
   };
   
   /**
@@ -290,7 +340,7 @@
     MathParser.log("MathParser.updateVariable");
     var cur = find("#current_"+label);
     MathParser.log("MathParser.updateVariable - calling sketch.updateVariable");
-    sketch.updateVariable(label, parseFloat(range.get("min")), parseFloat(range.get("max")), parseFloat(range.get("step")), parseFloat(value));
+    MathParser.sketch.updateVariable(label, parseFloat(range.get("min")), parseFloat(range.get("max")), parseFloat(range.get("step")), parseFloat(value));
     MathParser.tryPlot();
   };
 
@@ -298,6 +348,9 @@
    * create an HTML element that represents and interacts with this variable
    */
   MathParser.formVariableDiv = function(variable) {
+    if(variable.label=="10") {
+     console.log("wtf");
+    }
     MathParser.log("MathParser.formVariableDiv");
     var label = variable.label,
         start = variable.start,
@@ -330,9 +383,52 @@
             create("span").set({"class": "value", id: "current_"+label}).html(""+value).css("display", (variable.controlled ? "none" : "inline-block")),
             // this element can be used to write debug information in the console
             create("span").set({"class": "debug", id: "debug_"+label}).html("debug").listen("click",function(){
-              window["current_variable"] = sketch.getVariables().get(label);
+              window["current_variable"] = MathParser.sketch.getVariables().get(label);
               MathParser.log("created a global 'current_variable' for inspecting variable "+label+". content: ",current_variable);
             }).set("title","refer to the console after clicking debug"));
     return div;
   };
+
+  /**
+   * Show the function and variables tabs
+   */
+  MathParser.showlips = function() {
+    var nh = "auto";
+    var top = find(".lip-up").css({height: nh, width: "350px"});
+    find("#function_template").css({height: nh, display: "block", marginTop: "0px"});
+    find(".lip-down").css({height: nh, width: "350px"});
+    find("#variables_template").css({height: nh, display: "block", marginBottom: "0px"});
+    // correct for top-height
+    top.css("marginTop", "-" + (top.clientHeight-5) + "px");
+  }
+
+  /**
+   * hide the function and variables tabs
+   */
+  MathParser.closelips = function() {
+    var nh = "5px";
+    find(".lip-up").css({height: nh, width: "100px", marginTop: "0px"});
+    find("#function_template").css({height: nh, display: "none"});
+    find(".lip-down").css({height: nh, width: "100px"});
+    find("#variables_template").css({height: nh, display: "none"});
+  }
+
+  /**
+   * bind the plotting sketch
+   */
+  MathParser.bindPjs = function() {
+    if(Processing) {
+      MathParser.sketch = Processing.getInstanceById("plot_canvas");
+      if(MathParser.sketch) {
+        MathParser.sketch.bindJavaScript(this);
+        find('#function_x').placeholder = MathParser.sketch.getFunctionX();
+        MathParser.parseURL();
+      }
+      else { setTimeout(MathParser.bindPjs, 250); }
+    } else { setTimeout(MathParser.bindPjs, 250); }
+  };
+
+  // kick off the search
+  MathParser.bindPjs();
+
 }(window.location));

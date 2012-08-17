@@ -66,7 +66,7 @@ void draw() {
   text((ty==null ? variables.controlled.label : "x") + " →", width/2, height-5);
   text("↑\n" + (ty==null ? "f(t)" : "y"), padding/2, height/2);
   
-  if(js!=null) { js.plotFinished(this); }
+  if(js!=null) { js.MathParser.plotFinished(this); }
 }
 
 /**

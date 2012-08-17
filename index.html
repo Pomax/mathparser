@@ -3,15 +3,72 @@
   <head>
     <meta charset="utf-8">
     <title>A Math Parser for Processing, written in Processing, running with Processing.js</title>
+
+    <!-- web fonts, because we're lazy -->
+    <link href='http://fonts.googleapis.com/css?family=Acme' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Oleo+Script:400,700' rel='stylesheet' type='text/css'>
+
     <!-- styles -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/slider.css">
-    <!-- resource scripts -->
-    <script src="js/resource/toolkit.js"></script>
-    <script src="js/resource/processing-1.4.1-patched.js"></script>
-    <script src="js/resource/jquery/jquery.js"></script>
-    <script src="js/resource/jquery/jquery-ui.js"></script>
-    <!-- we want to convert LaTeX source into html+css -->
+    <link rel="stylesheet" href="css/mathparser.css">
+  </head>
+  
+  <body style="vertical-align: top; height: 90%;">
+  
+    <article>
+      <header>
+        <h1>The web is great!</h1>
+        <h2>“...too bad that it sucks so much for mathy things”</h2>
+      </header>
+
+      <!-- will contain the mathparser code -->
+      <aside id="mathparser"></aside>
+
+      <p>I know, right? The funny thing is that it doesn't have to be.
+      After all, it's 2012, we really, really do have the technology.
+      <A href="http://diveintohtml5.info/">HTML</a> and <a href="http://www.alistapart.com/">CSS</a>
+      and <a href="https://developer.mozilla.org/en-US/docs/JavaScript">JavaScript</a> lets us do so much, how hard can it
+      be to just write something that lets you put some math on a page
+      and have it look good, and plot the function. And make that
+      interactive?</p>
+      
+      <p>Turns out: not that hard, someone just has to do it. So I did,
+      and now you can use this on your page too, and maybe we can finally
+      get rid of all the gif-image-for-formulae that still poison the
+      math-oriented web, or &lt;pre&gt; formatted ASCII. I mean, seriously?</p>
+      
+      <p>Take the graph on the right. That's the graph for the following
+      function:</p>
+      
+      <p>\[f(t)=\int_{0}^{t} \frac{sin\left ( t \right ) }{1+a \cdot cos\left
+       ( b \cdot t-c \cdot sin\left ( d \cdot t \right )  \right ) } \frac{d}{dt}
+       , t=[0,2\pi] \]</p>
+
+      <p>Does that function look ugly? No. Because it was converted on-page
+      from the LaTeX code for it. You'll never see that code, you just see
+      a pretty function, thanks to <a href="http://mathjax.org">MathJax</a>.
+      Yeah, that's one of the things we can do these days. Also, see that
+      graph? That's a live plot. Go on, click on the little tabs at the
+      top or bottom, and then do what comes naturally. Done playing? Click
+      the graph to hide all those extra bits.</p>
+      
+      <p class="sig center">OH MY GOD IT'S INTERACTIVE!</p>
+      
+      <p>No but seriously, the best part? Click the function in the top
+      tab. See that input field? Start typing some math yourself, like
+      "sin(t) - cos(t)". Yeah, that's right. You type, it draws. We
+      have the technology. We can do this. What about a parametric 
+      function, with <i>f(x)</i> and <i>f(y)</i> having separate,
+      but same-variabled, function? Just click that checkbox.
+      <strong>This is how easy math on the web should be.</strong>
+      Show people what you want them to see, and let them play around
+      with it. You should use this. You should use this, now.</p>
+      
+      <p>“...you're right. Tell me how!” — Go <a href="https://github.com/pomax/mathparser">here</a>, follow the instructions, make great things.</p>
+      <p class="sig">- Pomax</p>
+    </article>
+
+    <!-- mathjax (we want HTML conversion for LaTeX) -->
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({
         extensions: ["tex2jax.js"],
@@ -19,198 +76,18 @@
         jax: ["input/TeX", "output/HTML-CSS"],
         "HTML-CSS": { availableFonts: ["TeX"] },
         displayAlign: "left",
-        displayIndent: "2em"}
+        displayIndent: "0.5em"}
       );
     </script>
-    <script src="js/resource/mathjax/MathJax.js"></script>
-    <!-- content scripts -->
-    <script src="js/Double.js"></script>
-    <script src="js/Integer.js"></script>
-    <script src="js/bindsketch.js"></script>
-    <script src="js/saveAs.js"></script>
+    <script src="js/resource/mathjax/MathJax.js"></script>    
+    <!-- needed for sliders atm -->
+    <script src="js/resource/jquery/jquery.js"></script>
+    <script src="js/resource/jquery/jquery-ui.js"></script>
+    <!-- necessary for math parsing! -->
+    <script src="js/resource/processing-1.4.1-patched.js"></script>
+    <!-- mathparser on-page library -->
     <script src="js/mathparser.js"></script>
-    <script>
-      MathParser.onAddVariable = function(variable, htmlElement) {
-        var label = variable.label,
-            update = function(event, ui) {
-              // This is ridiculous, but necessary: compute slider value manually
-              var head = ui.handle,
-                  base = head.parentNode,
-                  l = $(base).offset().left,
-                  o = $(head).offset().left - l + $(head).width()/2,
-                  w = $(base).width(),
-                  hval = o/w,
-                  min = parseFloat(base.getAttribute("min")),
-                  max = parseFloat(base.getAttribute("max")),
-                  step = parseFloat(base.getAttribute("step")),
-                  iv = 1 / step,
-                  value = Math.round(iv*(min + hval * (max - min)))*step;
-              // even more ridiculousness
-              base.setAttribute("value",value);
-              find("#current_"+label).html(Math.round(1000*value)/1000);
-              MathParser.updateVariable(label, this, value);
-            };
-        $("#range_"+label).slider({change: update, start: update, slide: update, stop: update}).attr("id","range_"+label);
-      };
-    </script>
-  </head>
-  
-  <body style="vertical-align: top; height: 90%;">
-    <a href="https://github.com/pomax/mathparser">
-      <img style="position: absolute; float: right; top: 0; right: 0; border: 0; opacity: 0.7;"
-           src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"
-           alt="Fork me on GitHub"></a>
-  
-  
-    <h2 id="body">A math function parser for Processing, written in Processing, running with Processing.js</h2>
-
-    <div style="float:left;">
-      <div>
-        <div id="latex_x" onclick="find('#latex_x_input').toggle()" title="click to change"></div>
-        <div id="latex_x_input" style="display: none;">
-          Type a function<span id="paramlabel_x"></span>:
-          <input type="text" placeholder="1/t" id="function_x" onkeyup="MathParser.updateFunction(this)">
-        </div>
-
-        <div id="params" style="display: none">
-         <div id="latex_y" onclick="find('#latex_y_input').toggle()" title="click to change"></div>
-         <div id="latex_y_input" style="display: none;">
-            Type a function<span id="paramlabel_y"> for y</span>:
-            <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y" onkeyup="MathParser.updateFunction(this)">
-          </div>
-        </div>
-        <div>parametric function: <input type="checkbox" id="parametric" onchange="MathParser.checkbox(this)"></div>
-
-        <div id="parameters">
-          <p>Variables <span class='minor'>(<i>t</i> always acts as control variable)</span>:</p>
-          <div id="variables"></div>
-        </div>
-      </div>
-      
-      <div>
-        <canvas id="plot"
-                style="clear: both; border: 1px solid black;"
-                data-processing-sources="mathparser/ArithmeticFragment.pde
-                                         mathparser/FunctionTree.pde
-                                         mathparser/Tape.pde
-                                         mathparser/Variables.pde
-                                         mathparser/utilities.pde
-                                         mathparser/parseFunctions.pde
-                                         mathparser/JavaScript.pde
-                                         mathparser/saveAs.pde
-                                         mathparser/mathparser.pde
-                                         RuntimeException.patch"></canvas>
-        <p>Right click to save the image, or use this <a href="" id="link">link</a> to show people this graph!</p>
-      </div>
-    </div>
-
-    <div style="float: right; width: 500px; height: 90%; overflow-y: scroll; padding-right: 2em;">
-      <p>The API (<i>a.k.a. "what can I use"</i>):</p>
-      
-      <p><strong>unary operators</strong></p>
-
-      <dl>
-        <dt>-n</dt><dd>negative n</dd>
-        <dt>n!</dt><dd>factorial of n</dd>
-      </dl>     
-
-      <p><strong>binary operators</strong></p>
-
-      <dl>
-        <dt>n+m</dt><dd>m added to n</dd>
-        <dt>n-m</dt><dd>m subtracted from n</dd>
-        <dt>n*m</dt><dd>n multiplied by m</dd>
-        <dt>n/m</dt><dd>n divided by m</dd>
-        <dt>n^m</dt><dd>n raised to the power m</dd>
-        <dt>(…)</dt><dd>explicit grouping</dd>
-      </dl>
-      
-      <p><strong>operator order</strong></p>
-      
-      <dl>
-        <dt>1</dt><dd>barring explicit groups, ! is evaluated first,</dd>
-        <dt>2</dt><dd>then ^ is evaluated,</dd>
-        <dt>3</dt><dd>then the negating - is evaluated,</dd>
-        <dt>4</dt><dd>then * and / are evaluated, </dd>
-        <dt>5</dt><dd>and then, finally, + and - are evaluated.</dd>
-      </dl>
-      
-      <p>In a statement like "t^2 - t + 10", equal order operators
-      are resolved left to right, so this is equivalent to "(t^2 - t) + 10".</p>
-
-      <p><strong>constants</strong></p>
-      
-      <dl>
-        <dt>e</dt><dd>the natural logarithm base</dd>
-        <dt>pi</dt><dd>the circumference of a circle with diameter 0.5</dd>
-      </dl>
-      
-      <p><strong>functions</strong></p>
-      
-      <dl>
-        <dt>sin(x)</dt><dd>the sine function</dd>
-        <dt>cos(x)</dt><dd>the cosine function</dd>
-        <dt>tan(x)</dt><dd>the tangent function</dd>
-        <dt>asin(x)</dt><dd>the arcsine function</dd>
-        <dt>acos(x)</dt><dd>the arccosine function</dd>
-        <dt>atan(x)</dt><dd>the arctangent function</dd>
-        <dt>sinh(x)</dt><dd>the hyperbolic sine function</dd>
-        <dt>cosh(x)</dt><dd>the hyperbolic cosine function</dd>
-        <dt>tanh(x)</dt><dd>the hyperbolic tangent function</dd>
-        <dt>ln(x)</dt><dd>the natural logarithm function (using base <i>e</i>)</dd>
-        <dt>log(x)</dt><dd>the decimal logarithm function (using base 10)</dd>
-        <dt>sqrt(x)</dt><dd>the square root function</dd>
-        <dt>abs(x)</dt><dd>the absolute value function</dd>
-      </dl>
-      
-      <p>There is no <code>exp</code> function - just use <i>e</i><code>^</code><i>x</i>.
-      There are also no other exponent function beyond <code>sqrt</code>,
-      which is just something that effects <i>x</i><code>^</code>0.5 — simply
-      use the <code>^</code> operator for anything involving roots and powers.</p>
-
-      <p>Also, if you need a different base logarithmic function,
-      use log division: base 2 is log(x)/log(2), base pi is log(x)/log(pi),
-      etc.</p>
-
-      <p><strong>special functions</strong></p>
-      
-      <dl id="special-functions">
-        <dt>sum(&lt;start&gt;,&lt;end&gt;,<i>f(t)</i>)</dt><dd>Calculate the sum of a function <i>f(t)</i> that uses a special iterator
-                                                               variable <i>n</i>, summed for terms <i>n</i> = start to <i>n</i> = end.
-                                                               Start and end can be either plain numbers, or variables, in which
-                                                               case they are controllable just like any other variable.</dd>
-        <dt>prod(&lt;start&gt;,&lt;end&gt;,<i>f(t)</i>)</dt><dd>Calculate the product of a function <i>f(t)</i> that uses a special iterator
-                                                               variable <i>n</i>, multiplied for terms <i>n</i> = start to <i>n</i> = end.
-                                                               Start and end can be either plain numbers, or variables, in which
-                                                               case they are controllable just like any other variable.</dd>
-        <dt>area(&lt;start&gt;,&lt;end&gt;,&lt;steps&gt;,&lt;controlled variable&gt;,<i>f(t)</i>)</dt><dd><br>
-                                                               Calculate the area between a function <i>f(t)</i> and the axis for t over
-                                                               interval <i>controlled variable</i> = &lt;start&gt; to &lt;end&gt;, using
-                                                               &lt;steps&gt; slices. Note that <i>area</i> requires its own controlled
-                                                               variable - there are no restrictions on which variables may or may not be
-                                                               used in this context. Note that, depending on the number of slices used
-                                                               to obtain an area summation, your result may be off by a significant amount.</dd>
-      </dl>                                                               
-
-      <p>Note that if these functions are given plain number start and end values,
-      their result will simply act as a scaling factor (multiplicative for <i>sum</i>,
-      power for <i>prod</i>). Using <i>sum(0,4,t)</i>, without a term <i>n</i> to
-      control the summation function is equivalent to using the function <i>5*t</i>.
-      However, you may use variables as interval markers, so <i>sin(0,t,t)</i> will
-      actually produce something meaningful. For <i>sum</i> and <i>prod</i> the
-      iteration always uses integer numbers, even if you give it decimals. The
-      </i>area</i> function can deal with decimal intervals.</p>
-      
-      <p><strong>warning</strong>: double and triple sums etc. are problematic 
-      at the moment, because the iterator variable <i>n</i> is used regardless
-      of whether it is already assigned some value. This will be fixed in a later version.</p>
-    </div>
-
+    <!-- inject into page -->
+    <script>MathParser.loadBlock("mathparser");</script>
   </body>
-  <script>
-    // If the slider file has loaded then fire the onDomReady event        
-    if("fdSlider" in window && typeof (fdSlider.onDomReady) != "undefined") {
-      try { fdSlider.onDomReady(); } catch(err) {};
-    }
-  </script>
 </html>

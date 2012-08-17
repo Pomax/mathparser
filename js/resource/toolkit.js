@@ -31,6 +31,9 @@
      * get/set css properties
      */
     bind(e, "css", function(prop, val) {
+      if(val==null && typeof prop === "object") {
+        for(p in prop) { if(exists(prop[p])) { e.style[p] = prop[p]; }}
+        return e; }
       if(exists(val)) { e.style[prop] = val; return e; }
       return document.defaultView.getComputedStyle(e,null).getPropertyValue(prop) || e.style[prop];
     });
