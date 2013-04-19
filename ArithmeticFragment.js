@@ -203,7 +203,7 @@ ArithmeticFragment.prototype = {
         }
       }
 
-      finalNode = nodes[0];
+      finalNode = (nodes.length>0 ? nodes[0] : tn);
     }
     // no children: simple content
     else { finalNode = getSimpleNode(this.fragment); }
