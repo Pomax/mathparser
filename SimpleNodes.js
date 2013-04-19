@@ -1,4 +1,4 @@
-var NumberNode = function(value) { this.value = parseFloat(value); console.log(this.value); };
+var NumberNode = function(value) { this.value = parseFloat(value); };
 NumberNode.prototype = new FunctionTree();
 NumberNode.prototype.evaluate = function() { return this.value; };
 NumberNode.prototype.toString = function() { return "num:" + this.value; };
