@@ -119,7 +119,7 @@ ArithmeticFragment.prototype = {
             this.fragment = "";
             this.children.push(new ArithmeticFragment(buffer)); }
           // operator
-          if(token == "!") { this.children.add(new UnaryOperator(token)); }
+          if(token == "!") { this.children.push(new UnaryOperator(token)); }
           else { this.children.push(new Operator(token)); }
           buffer = "";
         } else if(token == "-") {
