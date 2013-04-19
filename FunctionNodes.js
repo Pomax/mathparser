@@ -72,14 +72,14 @@ FunctionNode_tanh.prototype.evaluate = function(var_names, values) {
 var FunctionNode_ln = function(content) { this.setContent(content); };
 FunctionNode_ln.prototype = new FunctionNode("ln");
 FunctionNode_ln.prototype.evaluate = function(var_names, values) {
-  var v = content.evaluate(var_names, values);
+  var v = this.content.evaluate(var_names, values);
   return Math.log(v) / Math.log(Math.E);
 };
 
 var FunctionNode_log = function(content) { this.setContent(content); };
 FunctionNode_log.prototype = new FunctionNode("log");
 FunctionNode_log.prototype.evaluate = function(var_names, values) {
-  var v = content.evaluate(var_names, values);
+  var v = this.content.evaluate(var_names, values);
   return Math.log(v) / Math.log(10);
 };
 
@@ -88,7 +88,7 @@ FunctionNode_sqrt.prototype = new FunctionNode("sqrt");
 FunctionNode_sqrt.prototype.evaluate = function(var_names, values) {
   return Math.sqrt(this.content.evaluate(var_names, values));
 };
-FunctionNode_sqrt.prototype.toLaTeX = function() { return "\\sqrt{" + this.content.toLaTeX() + "}"; } 
+FunctionNode_sqrt.prototype.toLaTeX = function() { return "\\sqrt{" + this.content.toLaTeX() + "}"; }
 
 var FunctionNode_abs = function(content) { this.setContent(content); };
 FunctionNode_abs.prototype = new FunctionNode("abs");
