@@ -1,216 +1,150 @@
 <!doctype html>
-<html style="height: 100%;" class="no-js">
+<html>
   <head>
-    <meta charset="utf-8">
-    <title>A Math Parser for Processing, written in Processing, running with Processing.js</title>
-    <!-- styles -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/slider.css">
-    <!-- resource scripts -->
-    <script src="js/resource/toolkit.js"></script>
-    <script src="js/resource/processing-1.4.1-patched.js"></script>
-    <script src="js/resource/jquery/jquery.js"></script>
-    <script src="js/resource/jquery/jquery-ui.js"></script>
-    <!-- we want to convert LaTeX source into html+css -->
+    <meta charset="utf8">
+    <script src="Tape.js"></script>
+    <script src="ArithmeticFragment.js"></script>
+    <script src="Dictionary.js"></script>
+<!--
+    <script src="NameValueSet.js"></script>
+    <script src="Variable.js"></script>
+    <script src="Variables.js"></script>
+-->
+    <script src="FunctionTree.js"></script>
+    <script src="SimpleNodes.js"></script>
+    <script src="OperatorNodes.js"></script>
+    <script src="FunctionNodes.js"></script>
+    <script src="AggregatorNodes.js"></script>
+    <!-- We use MathJax to draw pretty LaTeX formulae on the page -->
     <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        extensions: ["tex2jax.js"],
-        inlineMath: [['\\(','\\)']],
-        jax: ["input/TeX", "output/HTML-CSS"],
-        "HTML-CSS": { availableFonts: ["TeX"] },
-        displayAlign: "left",
-        displayIndent: "2em"}
-      );
+      MathJax.Hub.Config({ displayAlign: "left", displayIndent: "2em" });
     </script>
-    <script src="js/resource/mathjax/MathJax.js"></script>
-    <!-- content scripts -->
-    <script src="js/Double.js"></script>
-    <script src="js/Integer.js"></script>
-    <script src="js/bindsketch.js"></script>
-    <script src="js/saveAs.js"></script>
-    <script src="js/mathparser.js"></script>
     <script>
-      MathParser.onAddVariable = function(variable, htmlElement) {
-        var label = variable.label,
-            update = function(event, ui) {
-              // This is ridiculous, but necessary: compute slider value manually
-              var head = ui.handle,
-                  base = head.parentNode,
-                  l = $(base).offset().left,
-                  o = $(head).offset().left - l + $(head).width()/2,
-                  w = $(base).width(),
-                  hval = o/w,
-                  min = parseFloat(base.getAttribute("min")),
-                  max = parseFloat(base.getAttribute("max")),
-                  step = parseFloat(base.getAttribute("step")),
-                  iv = 1 / step,
-                  value = Math.round(iv*(min + hval * (max - min)))*step;
-              // even more ridiculousness
-              base.setAttribute("value",value);
-              find("#current_"+label).html(Math.round(1000*value)/1000);
-              MathParser.updateVariable(label, this, value);
-            };
-        $("#range_"+label).slider({change: update, start: update, slide: update, stop: update}).attr("id","range_"+label);
-      };
+      (function(){
+        if(window.location.toString().indexOf("noMathJax")===-1) {
+          var script = document.createElement("script");
+          script.src = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML";
+          document.head.appendChild(script);
+        }
+      }());
     </script>
   </head>
-  
-  <body style="vertical-align: top; height: 90%;">
-    <a href="https://github.com/pomax/mathparser">
-      <img style="position: absolute; float: right; top: 0; right: 0; border: 0; opacity: 0.7;"
-           src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"
-           alt="Fork me on GitHub"></a>
-  
-  
-    <h2 id="body">A math function parser for Processing, written in Processing, running with Processing.js</h2>
+  <body>
+    <h2>Porting a Processing function parser and plotter to pure JavaScript</h2>
 
-    <div style="float:left;">
-      <div>
-        <div id="latex_x" onclick="find('#latex_x_input').toggle()" title="click to change"></div>
-        <div id="latex_x_input" style="display: none;">
-          Type a function<span id="paramlabel_x"></span>:
-          <input type="text" placeholder="1/t" id="function_x" onkeyup="MathParser.updateFunction(this)">
-        </div>
+    <input type="text" id="function" value="sin(x) - tan(x) + cos(x^2.4)">
+    <button onclick="plot()">plot</button>
+    <p id="prettyFormula"></p>
+    <canvas id="plots"></canvas>
 
-        <div id="params" style="display: none">
-         <div id="latex_y" onclick="find('#latex_y_input').toggle()" title="click to change"></div>
-         <div id="latex_y_input" style="display: none;">
-            Type a function<span id="paramlabel_y"> for y</span>:
-            <input type="text" placeholder="cos(t) - sin(t)^2 + sin(t)" id="function_y" onkeyup="MathParser.updateFunction(this)">
-          </div>
-        </div>
-        <div>parametric function: <input type="checkbox" id="parametric" onchange="MathParser.checkbox(this)"></div>
+    <script>
+      var viewbox = {minx: 0, maxx: 200, miny: -50, maxy: 50};
+    </script>
 
-        <div id="parameters">
-          <p>Variables <span class='minor'>(<i>t</i> always acts as control variable)</span>:</p>
-          <div id="variables"></div>
-        </div>
-      </div>
-      
-      <div>
-        <canvas id="plot"
-                style="clear: both; border: 1px solid black;"
-                data-processing-sources="mathparser/ArithmeticFragment.pde
-                                         mathparser/FunctionTree.pde
-                                         mathparser/Tape.pde
-                                         mathparser/Variables.pde
-                                         mathparser/utilities.pde
-                                         mathparser/parseFunctions.pde
-                                         mathparser/JavaScript.pde
-                                         mathparser/saveAs.pde
-                                         mathparser/mathparser.pde
-                                         RuntimeException.patch"></canvas>
-        <p>Right click to save the image, or use this <a href="" id="link">link</a> to show people this graph!</p>
-      </div>
-    </div>
+    <script>
+      // generic mapping function, with safeties.
+      var map = function(value, d1, d2, r1, r2, retval) {
+        if(isNaN(value)) return false;
+        if(value==Infinity) { return Math.pow(2,31); }
+        if(value==-Infinity) { return -Math.pow(2,31); }
+        retval = r1 + (r2 - r1) * ((value - d1) / (d2 - d1));
+        if(isNaN(retval)) return false;
+        if(retval==Infinity) { return Math.pow(2,31); }
+        if(retval==-Infinity) { return -Math.pow(2,31); }
+        return retval;
+      };
+    </script>
 
-    <div style="float: right; width: 500px; height: 90%; overflow-y: scroll; padding-right: 2em;">
-      <p>The API (<i>a.k.a. "what can I use"</i>):</p>
-      
-      <p><strong>unary operators</strong></p>
+    <script>
+      // naive asymptote finding. Works by constructing a dy/dx value
+      var hasAsymptote = (function() {
+        var px = false, py = false, dp = false, threshold = 4;
+        return function(x,y) {
+          if(px==false && py==false) { px = x; py = y; return false; }
+          else if(dp==false) { dp = (y-py)/(x-px); px = x; py = y; return false; }
+          var d = (y-py)/(x-px);
+          var asym = (d>threshold && dp<-threshold) || (d<-threshold && dp>threshold);
+          px = x;
+          py = y;
+          dp = d;
+          return asym;
+        };
+      }());
+    </script>
 
-      <dl>
-        <dt>-n</dt><dd>negative n</dd>
-        <dt>n!</dt><dd>factorial of n</dd>
-      </dl>     
+    <script>
+      function plot() {
+        var functionString = document.querySelector("#function").value;
+        functionString = functionString.replace(/\s/g,'');
+        var arithmeticFragment = new ArithmeticFragment(functionString);
+        if(arithmeticFragment.isBalanced()) {
 
-      <p><strong>binary operators</strong></p>
+          // get the function and show it on-page
+          var functionTree = arithmeticFragment.formFunctionTree();
+          var LaTeX = functionTree.toLaTeX();
+          var p = document.querySelector("#prettyFormula");
+          p.innerHTML = "\\[" + LaTeX + "\\]";
+          MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 
-      <dl>
-        <dt>n+m</dt><dd>m added to n</dd>
-        <dt>n-m</dt><dd>m subtracted from n</dd>
-        <dt>n*m</dt><dd>n multiplied by m</dd>
-        <dt>n/m</dt><dd>n divided by m</dd>
-        <dt>n^m</dt><dd>n raised to the power m</dd>
-        <dt>(…)</dt><dd>explicit grouping</dd>
-      </dl>
-      
-      <p><strong>operator order</strong></p>
-      
-      <dl>
-        <dt>1</dt><dd>barring explicit groups, ! is evaluated first,</dd>
-        <dt>2</dt><dd>then ^ is evaluated,</dd>
-        <dt>3</dt><dd>then the negating - is evaluated,</dd>
-        <dt>4</dt><dd>then * and / are evaluated, </dd>
-        <dt>5</dt><dd>and then, finally, + and - are evaluated.</dd>
-      </dl>
-      
-      <p>In a statement like "t^2 - t + 10", equal order operators
-      are resolved left to right, so this is equivalent to "(t^2 - t) + 10".</p>
+          // generate some plotting data
+          var plotData = functionTree.plot('x', 0, 10, 0.01, [
+            {label:'a',value:1},
+            {label:'b',value:1},
+            {label:'y',value:Math.PI}
+          ]);
 
-      <p><strong>constants</strong></p>
-      
-      <dl>
-        <dt>e</dt><dd>the natural logarithm base</dd>
-        <dt>pi</dt><dd>the circumference of a circle with diameter 0.5</dd>
-      </dl>
-      
-      <p><strong>functions</strong></p>
-      
-      <dl>
-        <dt>sin(x)</dt><dd>the sine function</dd>
-        <dt>cos(x)</dt><dd>the cosine function</dd>
-        <dt>tan(x)</dt><dd>the tangent function</dd>
-        <dt>asin(x)</dt><dd>the arcsine function</dd>
-        <dt>acos(x)</dt><dd>the arccosine function</dd>
-        <dt>atan(x)</dt><dd>the arctangent function</dd>
-        <dt>sinh(x)</dt><dd>the hyperbolic sine function</dd>
-        <dt>cosh(x)</dt><dd>the hyperbolic cosine function</dd>
-        <dt>tanh(x)</dt><dd>the hyperbolic tangent function</dd>
-        <dt>ln(x)</dt><dd>the natural logarithm function (using base <i>e</i>)</dd>
-        <dt>log(x)</dt><dd>the decimal logarithm function (using base 10)</dd>
-        <dt>sqrt(x)</dt><dd>the square root function</dd>
-        <dt>abs(x)</dt><dd>the absolute value function</dd>
-      </dl>
-      
-      <p>There is no <code>exp</code> function - just use <i>e</i><code>^</code><i>x</i>.
-      There are also no other exponent function beyond <code>sqrt</code>,
-      which is just something that effects <i>x</i><code>^</code>0.5 — simply
-      use the <code>^</code> operator for anything involving roots and powers.</p>
+          // get the draw ranges from that data
+          var minx=999999,maxx=-999999,miny=minx,maxy=maxx,x,y,asymptotes=[];
+          plotData.forEach(function(point) {
+            x = point[0];
+            if(isNaN(x) || x==Infinity || x==-Infinity) { return; }
+            if(x < minx) minx = x>viewbox.minx? x : viewbox.minx;
+            if(x > maxx) maxx = x<viewbox.maxx? x : viewbox.maxx;
+            y = point[1];
+            if(isNaN(y) || y==Infinity || y==-Infinity) { asymptotes.push(x); return; }
+            if(y < miny) miny = y>viewbox.miny ? y: viewbox.miny;
+            if(y > maxy) maxy = y<viewbox.maxy ? y: viewbox.maxy;
+          });
 
-      <p>Also, if you need a different base logarithmic function,
-      use log division: base 2 is log(x)/log(2), base pi is log(x)/log(pi),
-      etc.</p>
+          // set up a drawing surface
+          var canvas = document.querySelector("#plots");
+          canvas.width = 400;
+          canvas.height = 400;
+          canvas.style.border = "1px solid black";
+          document.addEventListener("DOMContentLoaded", function() {
+            document.body.appendChild(canvas);
+          }, false);
+          var context = canvas.getContext("2d");
+          context.fillStyle="white";
+          context.clearRect(0,0,400,400);
+          context.translate(0.5,0.5);
 
-      <p><strong>special functions</strong></p>
-      
-      <dl id="special-functions">
-        <dt>sum(&lt;start&gt;,&lt;end&gt;,<i>f(t)</i>)</dt><dd>Calculate the sum of a function <i>f(t)</i> that uses a special iterator
-                                                               variable <i>n</i>, summed for terms <i>n</i> = start to <i>n</i> = end.
-                                                               Start and end can be either plain numbers, or variables, in which
-                                                               case they are controllable just like any other variable.</dd>
-        <dt>prod(&lt;start&gt;,&lt;end&gt;,<i>f(t)</i>)</dt><dd>Calculate the product of a function <i>f(t)</i> that uses a special iterator
-                                                               variable <i>n</i>, multiplied for terms <i>n</i> = start to <i>n</i> = end.
-                                                               Start and end can be either plain numbers, or variables, in which
-                                                               case they are controllable just like any other variable.</dd>
-        <dt>area(&lt;start&gt;,&lt;end&gt;,&lt;steps&gt;,&lt;controlled variable&gt;,<i>f(t)</i>)</dt><dd><br>
-                                                               Calculate the area between a function <i>f(t)</i> and the axis for t over
-                                                               interval <i>controlled variable</i> = &lt;start&gt; to &lt;end&gt;, using
-                                                               &lt;steps&gt; slices. Note that <i>area</i> requires its own controlled
-                                                               variable - there are no restrictions on which variables may or may not be
-                                                               used in this context. Note that, depending on the number of slices used
-                                                               to obtain an area summation, your result may be off by a significant amount.</dd>
-      </dl>                                                               
+          // draw the function
+          var first=true, asym;
+          plotData.forEach(function(point) {
+            x = map(point[0],minx,maxx,0,400);
+            y = map(point[1],miny,maxy,0,400);
+            asym = hasAsymptote(x,y);
+            if(asym) {
+              asymptotes.push(point[0]);
+              context.stroke();
+              context.beginPath();
+              first = true;
+            } else { context.lineTo(x,y); }
+          });
+          context.stroke();
 
-      <p>Note that if these functions are given plain number start and end values,
-      their result will simply act as a scaling factor (multiplicative for <i>sum</i>,
-      power for <i>prod</i>). Using <i>sum(0,4,t)</i>, without a term <i>n</i> to
-      control the summation function is equivalent to using the function <i>5*t</i>.
-      However, you may use variables as interval markers, so <i>sin(0,t,t)</i> will
-      actually produce something meaningful. For <i>sum</i> and <i>prod</i> the
-      iteration always uses integer numbers, even if you give it decimals. The
-      </i>area</i> function can deal with decimal intervals.</p>
-      
-      <p><strong>warning</strong>: double and triple sums etc. are problematic 
-      at the moment, because the iterator variable <i>n</i> is used regardless
-      of whether it is already assigned some value. This will be fixed in a later version.</p>
-    </div>
-
+          // also draw any asymptotes we (naively) found
+          context.strokeStyle = "rgba(255,0,0,0.5)";
+          asymptotes.forEach(function(x){
+            x = map(x,minx,maxx,0,400);
+            context.beginPath();
+            context.moveTo(x,0);
+            context.lineTo(x,400);
+            context.stroke();
+          });
+        };
+      }
+    </script>
   </body>
-  <script>
-    // If the slider file has loaded then fire the onDomReady event        
-    if("fdSlider" in window && typeof (fdSlider.onDomReady) != "undefined") {
-      try { fdSlider.onDomReady(); } catch(err) {};
-    }
-  </script>
 </html>
