@@ -32,14 +32,14 @@ ArithmeticFragment.prototype = {
   /**
    * balanced parentheses?
    */
-  isBalanced: function() {
+  getBalance: function() {
     var toks = this.fragment.split(""),
         pCount =0,
         i, last;
     for(i=0, last=toks.length; i<last; i++) {
       if(toks[i] == "(") pCount++;
       if(toks[i] == ")") pCount--; }
-    return pCount==0;
+    return pCount;
   },
   // functor(...) fragment?
   isFunctionWrapped: function(fragment) {

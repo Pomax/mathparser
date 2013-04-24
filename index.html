@@ -4,17 +4,12 @@
     <meta charset="utf8">
     <script src="Tape.js"></script>
     <script src="ArithmeticFragment.js"></script>
-    <script src="Dictionary.js"></script>
-<!--
-    <script src="NameValueSet.js"></script>
-    <script src="Variable.js"></script>
-    <script src="Variables.js"></script>
--->
     <script src="FunctionTree.js"></script>
     <script src="SimpleNodes.js"></script>
     <script src="OperatorNodes.js"></script>
     <script src="FunctionNodes.js"></script>
     <script src="AggregatorNodes.js"></script>
+    <script src="MathFunction.js"></script>
     <!-- We use MathJax to draw pretty LaTeX formulae on the page -->
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({ displayAlign: "left", displayIndent: "2em" });
@@ -32,118 +27,36 @@
   <body>
     <h2>Porting a Processing function parser and plotter to pure JavaScript</h2>
 
-    <input type="text" id="function" value="sin(x) - tan(x) + cos(x^2.4)">
+    <input type="text" id="function" value="sin(x) - tan(x) + cos(x^2.4)" style="width:400px">
+
     <button onclick="plot()">plot</button>
+
     <p id="prettyFormula"></p>
-    <canvas id="plots"></canvas>
+
+    <div id="plots"></div>
 
     <script>
-      var viewbox = {minx: 0, maxx: 200, miny: -50, maxy: 50};
-    </script>
-
-    <script>
-      // generic mapping function, with safeties.
-      var map = function(value, d1, d2, r1, r2, retval) {
-        if(isNaN(value)) return false;
-        if(value==Infinity) { return Math.pow(2,31); }
-        if(value==-Infinity) { return -Math.pow(2,31); }
-        retval = r1 + (r2 - r1) * ((value - d1) / (d2 - d1));
-        if(isNaN(retval)) return false;
-        if(retval==Infinity) { return Math.pow(2,31); }
-        if(retval==-Infinity) { return -Math.pow(2,31); }
-        return retval;
+      var viewbox = {
+        minx: 0,
+        maxx: 200,
+        miny: -50,
+        maxy: 50
       };
-    </script>
 
-    <script>
-      // naive asymptote finding. Works by constructing a dy/dx value
-      var hasAsymptote = (function() {
-        var px = false, py = false, dp = false, threshold = 4;
-        return function(x,y) {
-          if(px==false && py==false) { px = x; py = y; return false; }
-          else if(dp==false) { dp = (y-py)/(x-px); px = x; py = y; return false; }
-          var d = (y-py)/(x-px);
-          var asym = (d>threshold && dp<-threshold) || (d<-threshold && dp>threshold);
-          px = x;
-          py = y;
-          dp = d;
-          return asym;
-        };
-      }());
-    </script>
-
-    <script>
       function plot() {
-        var functionString = document.querySelector("#function").value;
-        functionString = functionString.replace(/\s/g,'');
-        var arithmeticFragment = new ArithmeticFragment(functionString);
-        if(arithmeticFragment.isBalanced()) {
-
-          // get the function and show it on-page
-          var functionTree = arithmeticFragment.formFunctionTree();
-          var LaTeX = functionTree.toLaTeX();
-          var p = document.querySelector("#prettyFormula");
-          p.innerHTML = "\\[" + LaTeX + "\\]";
-          MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-
-          // generate some plotting data
-          var plotData = functionTree.plot('x', 0, 10, 0.01, [
+        var mathFunction = new MathFunction(document.querySelector("#function").value);
+        mathFunction.render(document.getElementById('prettyFormula'));
+        var options = {
+          variable: 'x',
+          start:0,
+          end:10,
+          step:0.01,
+          claps: [
             {label:'a',value:1},
             {label:'b',value:1},
             {label:'y',value:Math.PI}
-          ]);
-
-          // get the draw ranges from that data
-          var minx=999999,maxx=-999999,miny=minx,maxy=maxx,x,y,asymptotes=[];
-          plotData.forEach(function(point) {
-            x = point[0];
-            if(isNaN(x) || x==Infinity || x==-Infinity) { return; }
-            if(x < minx) minx = x>viewbox.minx? x : viewbox.minx;
-            if(x > maxx) maxx = x<viewbox.maxx? x : viewbox.maxx;
-            y = point[1];
-            if(isNaN(y) || y==Infinity || y==-Infinity) { asymptotes.push(x); return; }
-            if(y < miny) miny = y>viewbox.miny ? y: viewbox.miny;
-            if(y > maxy) maxy = y<viewbox.maxy ? y: viewbox.maxy;
-          });
-
-          // set up a drawing surface
-          var canvas = document.querySelector("#plots");
-          canvas.width = 400;
-          canvas.height = 400;
-          canvas.style.border = "1px solid black";
-          document.addEventListener("DOMContentLoaded", function() {
-            document.body.appendChild(canvas);
-          }, false);
-          var context = canvas.getContext("2d");
-          context.fillStyle="white";
-          context.clearRect(0,0,400,400);
-          context.translate(0.5,0.5);
-
-          // draw the function
-          var first=true, asym;
-          plotData.forEach(function(point) {
-            x = map(point[0],minx,maxx,0,400);
-            y = map(point[1],miny,maxy,0,400);
-            asym = hasAsymptote(x,y);
-            if(asym) {
-              asymptotes.push(point[0]);
-              context.stroke();
-              context.beginPath();
-              first = true;
-            } else { context.lineTo(x,y); }
-          });
-          context.stroke();
-
-          // also draw any asymptotes we (naively) found
-          context.strokeStyle = "rgba(255,0,0,0.5)";
-          asymptotes.forEach(function(x){
-            x = map(x,minx,maxx,0,400);
-            context.beginPath();
-            context.moveTo(x,0);
-            context.lineTo(x,400);
-            context.stroke();
-          });
-        };
+          ]};
+        mathFunction.plot(document.getElementById("plots"), options, viewbox);
       }
     </script>
   </body>

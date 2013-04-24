@@ -33,7 +33,6 @@ FunctionTree.prototype = {
   // helper method
   addParametersFromChild: function(list, child) {
     if(child) {
-      console.log(child);
       var free = child.getParameters();
       free.forEach(function(s){
         if(list.indexOf(s)>-1) return;
@@ -59,7 +58,6 @@ FunctionTree.prototype = {
       v = this.evaluate(var_names, [i].concat(values));
       data.push([i, v]);
     }
-    console.log(data);
     return data;
   }
 };
