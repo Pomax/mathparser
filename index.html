@@ -2,8 +2,7 @@
 <html>
   <head>
     <meta charset="utf8">
-    <script src="MathFunction.js"></script>
-    <!-- We use MathJax to draw pretty LaTeX formulae on the page -->
+    <title>A JavaScript math function library</title>
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({ displayAlign: "left", displayIndent: "2em" });
     </script>
@@ -12,44 +11,43 @@
         if(window.location.toString().indexOf("noMathJax")===-1) {
           var script = document.createElement("script");
           script.src = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML";
-          document.head.appendChild(script);
-        }
-      }());
+          document.head.appendChild(script); }}());
     </script>
+    <!-- the magic library -->
+    <script src="MathFunction.js"></script>
   </head>
   <body>
+
     <h2>Porting a Processing function parser and plotter to pure JavaScript</h2>
-
     <input type="text" id="function" value="sin(x) - tan(x) + cos(x^2.4)" style="width:400px">
-
     <button onclick="plot()">plot</button>
-
     <p id="prettyFormula"></p>
-
     <div id="plots"></div>
 
     <script>
-      var viewbox = {
-        minx: 0,
-        maxx: 200,
-        miny: -50,
-        maxy: 50
-      };
-
       function plot() {
-        var mathFunction = new MathFunction(document.querySelector("#function").value);
-        mathFunction.render(document.getElementById('prettyFormula'));
-        var options = {
-          variable: 'x',
-          start:0,
-          end:10,
-          step:0.01,
-          clamps: [
-            {label:'a',value:1},
-            {label:'b',value:1},
-            {label:'y',value:Math.PI}
-          ]};
-        mathFunction.plot(document.getElementById("plots"), options, viewbox);
+        var fn = document.querySelector("#function").value,
+            p = document.getElementById('prettyFormula'),
+            plotDiv = document.getElementById("plots"),
+            mathFunction = new MathFunction(fn),
+            viewbox = {minx: 0, maxx: 200, miny: -50, maxy: 50},
+            options = {
+              variable: 'x',
+              start:0,
+              end:10,
+              step:0.01,
+              clamps: [
+                {label:'a',value:1},
+                {label:'b',value:1},
+                {label:'y',value:Math.PI}
+              ]
+            };
+
+        // show formula on the page
+        mathFunction.render(p);
+
+        // plot formula
+        mathFunction.plot(plotDiv, options, viewbox);
       }
     </script>
   </body>
