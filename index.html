@@ -15,14 +15,57 @@
     </script>
     <!-- the magic library -->
     <script src="MathFunction.js"></script>
+    <style> div[style] { width: 49%; border: } code { background: #EEE; font-size: 90%;} dt { font-weight: bold; } </style>
   </head>
   <body>
 
     <h2>Porting a Processing function parser and plotter to pure JavaScript</h2>
-    <input type="text" id="function" value="sin(x) - tan(x) + cos(x^2.4)" style="width:400px">
-    <button onclick="plot()">plot</button>
-    <p id="prettyFormula"></p>
-    <div id="plots"></div>
+
+    <div style="float:left;">
+      <input type="text" id="function" value="sin(x) - tan(x) + cos(x^2.4)" style="width:400px">
+      <button onclick="plot()">plot</button>
+      <p id="prettyFormula"></p>
+      <div id="plots"></div>
+    </div>
+
+    <div style="float:right;">
+      <h3>A bit of API</h3>
+      <p>This library gives you a <code>MathFunction</code> object, which is created
+      with a function string as constructor argument, such as <code>new MathFuction("sin(x)
+      - tan(x) + cos(x^2.4)")</code>. If your function was balanced (i.e. all the opening
+      parentheses have matching closing parentheses) you can use the following API:</p>
+
+      <dl>
+        <dt>render(container)</dt>
+        <dd>shows the function as LaTeX in [container]. If MathJax is loaded, typesets it prettily.</dd>
+
+        <dt>plot(container, options, viewbox)</dt>
+        <dd>Plots the function, based on the given options: <code>{ variable: 'var that changes', start: number,
+        end: number, step: number, clamps: [ {label:'var that is clamped', value:number}, ... ]}</code>. If a
+        viewbox is given, of the form <code>{minx:num, maxx:num, miny:num, maxy:num}</code>, the plot will
+        be constrained to those values.</dd>
+      </dl>
+
+      <h3>Supported operations</h3>
+      <p>The MathFunction object understands the following operators and functions:</p>
+
+      <dl>
+        <dt>numbers and constants</dt>
+        <dd>integer and floating point numbers, supported constants: e, π</dd>
+
+        <dt>basic operators and grouping</dt>
+        <dd>...+..., ...-..., ...*..., .../..., ...^..., ...!, -..., (...)</dd>
+
+        <dt>built in functions, of the form fn(...)</dt>
+        <dd>sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, ln, log, sqrt, abs</dd>
+
+        <dt>built in aggregators, of the form fn(start, end, [function]), using "n" as control variable</dt>
+        <dd>sum, prod</dd>
+
+        <dt>special aggregators</dt>
+        <dd>area(start, end, steps, varname, [function])</dd>
+      </dl>
+    </div>
 
     <script>
       function plot() {
