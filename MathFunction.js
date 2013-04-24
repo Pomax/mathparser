@@ -4,6 +4,24 @@
 (function(){
 
   /**
+   * naive inclusion
+   */
+  (function(){
+    function include(file) {
+      var inclusion = document.createElement("script");
+      inclusion.src = file;
+      document.head.appendChild(inclusion); }
+
+    include('FunctionTree.js')
+    include('Tape.js')
+    include('ArithmeticFragment.js')
+    include('SimpleNodes.js')
+    include('OperatorNodes.js')
+    include('FunctionNodes.js')
+    include('AggregatorNodes.js')
+  }());
+
+  /**
    * naive asymptote finding. Works by constructing a dy/dx value
    */
   var hasAsymptote = (function() {
