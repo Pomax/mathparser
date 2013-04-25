@@ -8,6 +8,7 @@
       code { background: #EEE; font-size: 90%; }
       dt { font-weight: bold; }
       input[type=range] { width: 60%; vertical-align:-0.7em; }
+      input[type=text] { width: 3em; }
       figure { padding:5px; margin:0; border: 1px solid #CCC; width:400px; }
       figure div { text-align: center; }
       #prettyFormula { text-align: center; }
@@ -30,10 +31,19 @@
         <div><input type="range" class="end" min="0" max="1000" step="1" value="1000" onchange="plot()">
           (end <span id='endval'></span>)
         </div>
-        <div><input type="range" class="step" min="1" max="10000" step="1" value="1000" onchange="plot()">
+        <div><input type="range" class="step" min="1" max="10000" step="1" value="3000" onchange="plot()">
           (step <span id='stepval'></span>)
         </div>
       </figure>
+
+      <div>
+        <h3>viewbox values:</h3>
+        minx: <input type="text" id="v_minx" value="0" onchange="plot()">
+        maxx: <input type="text" id="v_maxx" value="10" onchange="plot()">
+        miny: <input type="text" id="v_miny" value="-100" onchange="plot()">
+        maxy: <input type="text" id="v_maxy" value="100" onchange="plot()">
+      </div>
+
     </div>
 
     <div style="float:right;">
@@ -88,7 +98,6 @@
             p = document.getElementById('prettyFormula'),
             plotDiv = document.getElementById("plots"),
             mathFunction = new MathFunction(fn),
-            viewbox = {minx: -100, maxx: 100, miny: -100, maxy: 100},
             start = (document.querySelector('input[type=range].start').value | 0)/100,
             end   = (document.querySelector('input[type=range].end').value | 0)/100,
             step  = (end-start)/(document.querySelector('input[type=range].step').value | 0);
@@ -117,6 +126,15 @@
         mathFunction.render(p);
 
         // plot formula
+        var viewbox = {
+          minx: parseFloat(document.querySelector("#v_minx").value),
+          maxx: parseFloat(document.querySelector("#v_maxx").value),
+          miny: parseFloat(document.querySelector("#v_miny").value),
+          maxy: parseFloat(document.querySelector("#v_maxy").value)
+        };
+        if(viewbox.minx < start) viewbox.minx = start;
+        if(viewbox.maxx > end) viewbox.maxx = end;
+
         mathFunction.plot(plotDiv, options, viewbox);
       }
 

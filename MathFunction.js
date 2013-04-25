@@ -149,7 +149,7 @@
       for(i=0; i<last; i++) {
         px = (pf ? plotData.x[i][1] : plotData.y[i][0]);
         x = map(px, minmax.minx ,minmax.maxx, 0, 400);
-        y = map(plotData.y[i][1], minmax.miny, minmax.maxy, 0, 400);
+        y = map(plotData.y[i][1], minmax.miny, minmax.maxy, 400, 0);
         asym = hasAsymptote(x,y);
         if(asym) {
           asymptotes.push(px);
