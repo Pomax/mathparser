@@ -1,10 +1,10 @@
 var NumberNode = function(value) { this.value = parseFloat(value); };
 NumberNode.prototype = new FunctionTree();
+NumberNode.prototype.nf = function(val) { return val.toFixed(Math.log(1/val)/Math.log(10)); };
 NumberNode.prototype.evaluate = function() { return this.value; };
-NumberNode.prototype.toString = function() { return "num:" + this.value; };
-NumberNode.prototype.toLaTeX = function() { return "{" + this.value + "}"; };
+NumberNode.prototype.toString = function() { return "num:" + this.nf(this.value); };
+NumberNode.prototype.toLaTeX = function() { return "{" + this.nf(this.value) + "}"; };
 NumberNode.prototype.getParameters = function() { return []; };
-
 
 var SimpleNode = function(label) { this.label = label; };
 SimpleNode.prototype = new FunctionTree();
@@ -45,4 +45,3 @@ var getSimpleNode = function(term) {
   if(term == "e") return new ConstantNode_e();
   if(isNumber(term)) return new NumberNode(term);
   return new SimpleNode(term); };
-  
