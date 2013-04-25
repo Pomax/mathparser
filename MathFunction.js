@@ -104,39 +104,26 @@
             x: (this.functionTree.x ? this.functionTree.x.plot( options.variable, options.start, options.end, options.step, options.clamps) : false),
             y: this.functionTree.y.plot( options.variable, options.start, options.end, options.step, options.clamps)
           },
-          minmax = this.findMinMax(plotData, viewbox);
+          minmax = {minx:viewbox.minx, maxx:viewbox.maxx, miny:viewbox.miny, maxy:viewbox.maxy, asymptotes:[]};
+      this.drawAxes(context, viewbox.axes, minmax);
       this.drawPlotData(context, plotData, minmax);
     },
     /**
-     * find the x and y minima/maxima for plot boundaries
+     * draw the plot axes
      */
-    findMinMax: function(plotData, viewbox) {
-      var minx=999999, maxx=-999999, miny=minx, maxy=maxx, x, y, asymptotes=[];
-      if(plotData.x) {
-        var i, last=plotData.x.length;
-        for(i=0; i<last; i++) {
-          x = plotData.x[i][1];
-          if(isNaN(x) || x==Infinity || x==-Infinity) { continue; }
-          if(x < minx) minx = x>viewbox.minx? x : viewbox.minx;
-          if(x > maxx) maxx = x<viewbox.maxx? x : viewbox.maxx;
-          y = plotData.y[i][1];
-          if(isNaN(y) || y==Infinity || y==-Infinity) { asymptotes.push(x); continue; }
-          if(y < miny) miny = y>viewbox.miny ? y: viewbox.miny;
-          if(y > maxy) maxy = y<viewbox.maxy ? y: viewbox.maxy;
-        }
-      } else {
-        plotData.y.forEach(function(point) {
-          x = point[0];
-          if(isNaN(x) || x==Infinity || x==-Infinity) { return; }
-          if(x < minx) minx = x>viewbox.minx? x : viewbox.minx;
-          if(x > maxx) maxx = x<viewbox.maxx? x : viewbox.maxx;
-          y = point[1];
-          if(isNaN(y) || y==Infinity || y==-Infinity) { asymptotes.push(x); return; }
-          if(y < miny) miny = y>viewbox.miny ? y: viewbox.miny;
-          if(y > maxy) maxy = y<viewbox.maxy ? y: viewbox.maxy;
-        });
-      }
-      return {minx: minx, maxx: maxx, miny: miny, maxy:maxy, asymptotes:asymptotes};
+    drawAxes: function(context, axes, minmax) {
+      var axis = map(axes.x, minmax.minx ,minmax.maxx, 0, 400);
+      context.strokeStyle = "#999";
+      context.moveTo(axis, 0);
+      context.lineTo(axis, 400);
+      context.stroke();
+      context.beginPath();
+
+      var axis = map(axes.y, minmax.miny ,minmax.maxy, 0, 400);
+      context.moveTo(0,axis);
+      context.lineTo(400,axis);
+      context.stroke();
+      context.beginPath();
     },
     /**
      * draw the function onto the canvas
@@ -144,7 +131,7 @@
     drawPlotData: function(context, plotData, minmax) {
       var context = this.plotCanvas.getContext("2d"),
           asymptotes = minmax.asymptotes;
-
+      context.strokeStyle = "black";
       var i, last=plotData.y.length, px, x, y, pf = (plotData.x!==false);
       for(i=0; i<last; i++) {
         px = (pf ? plotData.x[i][1] : plotData.y[i][0]);
