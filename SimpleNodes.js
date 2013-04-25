@@ -28,7 +28,7 @@ ConstantNode.prototype = new NumberNode();
 
 
 var ConstantNode_pi = function() {};
-ConstantNode_pi.prototype = new ConstantNode("pi", Math.PI);
+ConstantNode_pi.prototype = new ConstantNode("π", Math.PI);
 ConstantNode_pi.prototype.toLaTeX = function() { return "π"; };
 
 
@@ -40,8 +40,9 @@ ConstantNode_e.prototype.toLaTeX = function() { return "e"; };
 // builder functions
 var isNumber = function (n) { return n == parseFloat(n); };
 var getSimpleNode = function(term) {
-  if(term == "pi") return new SimpleNode_pi();
-  if(term == "e") return new SimpleNode_e();
+  if(term == "π") return new ConstantNode_pi();
+  if(term == "pi") return new ConstantNode_pi();
+  if(term == "e") return new ConstantNode_e();
   if(isNumber(term)) return new NumberNode(term);
   return new SimpleNode(term); };
   

@@ -3,37 +3,48 @@
   <head>
     <meta charset="utf8">
     <title>A JavaScript math function library</title>
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({ displayAlign: "left", displayIndent: "2em" });
-    </script>
-    <script>
-      (function(){
-        if(window.location.toString().indexOf("noMathJax")===-1) {
-          var script = document.createElement("script");
-          script.src = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML";
-          document.head.appendChild(script); }}());
-    </script>
-    <!-- the magic library -->
-    <script src="MathFunction.js"></script>
-    <style> div[style] { width: 49%; border: } code { background: #EEE; font-size: 90%;} dt { font-weight: bold; } </style>
+    <style>
+      div[style] { width: 49%; border: }
+      code { background: #EEE; font-size: 90%; }
+      dt { font-weight: bold; }
+      input[type=range] { width: 60%; vertical-align:-0.7em; }
+      figure { padding:5px; margin:0; border: 1px solid #CCC; width:400px; }
+      figure div { text-align: center; }
+      #prettyFormula { text-align: center; }
+      .MathJax_Display { width: 100%!important; tex-align: center!important; }
+    </style>
   </head>
   <body>
 
-    <h2>Porting a Processing function parser and plotter to pure JavaScript</h2>
+    <h2>A JavaScript plotting library</h2>
 
     <div style="float:left;">
       <input type="text" id="function" value="sin(x) - tan(x) + cos(x^2.4)" style="width:400px">
       <button onclick="plot()">plot</button>
-      <p id="prettyFormula"></p>
-      <div id="plots"></div>
+      <figure>
+        <div id="plots"></div>
+        <p id="prettyFormula"></p>
+        <div><input type="range" class="start" min="0" max="1000" step="1" value="0" onchange="plot()">
+          (start <span id='startval'></span>)
+        </div>
+        <div><input type="range" class="end" min="0" max="1000" step="1" value="1000" onchange="plot()">
+          (end <span id='endval'></span>)
+        </div>
+        <div><input type="range" class="step" min="1" max="10000" step="1" value="1000" onchange="plot()">
+          (step <span id='stepval'></span>)
+        </div>
+      </figure>
     </div>
 
     <div style="float:right;">
       <h3>A bit of API</h3>
       <p>This library gives you a <code>MathFunction</code> object, which is created
       with a function string as constructor argument, such as <code>new MathFuction("sin(x)
-      - tan(x) + cos(x^2.4)")</code>. If your function was balanced (i.e. all the opening
-      parentheses have matching closing parentheses) you can use the following API:</p>
+      - tan(x) + cos(x^2.4)")</code>. You can also set up a parametric function (in two dimensions)
+      by comma-separating the functions, such as <code>new MathFunction("cos(x), sin(x)")</code>.
+      If your function was balanced (i.e. all the opening parentheses have matching closing
+      parentheses) you can use the following API (if unbalanced, the constructor throws an
+      error for you to catch):</p>
 
       <dl>
         <dt>render(container)</dt>
@@ -67,18 +78,34 @@
       </dl>
     </div>
 
+    <script src="head.js"></script>
     <script>
+      /**
+       * plotting function based on on-page parameters
+       */
       function plot() {
         var fn = document.querySelector("#function").value,
             p = document.getElementById('prettyFormula'),
             plotDiv = document.getElementById("plots"),
             mathFunction = new MathFunction(fn),
-            viewbox = {minx: 0, maxx: 200, miny: -50, maxy: 50},
-            options = {
+            viewbox = {minx: -100, maxx: 100, miny: -100, maxy: 100},
+            start = (document.querySelector('input[type=range].start').value | 0)/100,
+            end   = (document.querySelector('input[type=range].end').value | 0)/100,
+            step  = (end-start)/(document.querySelector('input[type=range].step').value | 0);
+
+        end = (end>start ? end : start + 0.1);
+        step = (step>0 ? step : 0.001);
+        document.querySelector('#startval').innerHTML = Math.round(start*1000)/1000;
+        document.querySelector('#endval').innerHTML = Math.round(end*1000)/1000;
+        document.querySelector('#stepval').innerHTML = Math.round(step*100000)/100000;
+
+        var options = {
+              width: 400,
+              height: 400,
               variable: 'x',
-              start:0,
-              end:10,
-              step:0.01,
+              start: start,
+              end: end,
+              step: step,
               clamps: [
                 {label:'a',value:1},
                 {label:'b',value:1},
@@ -92,6 +119,20 @@
         // plot formula
         mathFunction.plot(plotDiv, options, viewbox);
       }
+
+      /**
+       * load the MathFunction object
+       */
+      head.js('FunctionTree.js',
+              'Tape.js',
+              'ArithmeticFragment.js',
+              'SimpleNodes.js',
+              'OperatorNodes.js',
+              'FunctionNodes.js',
+              'AggregatorNodes.js',
+              'MathFunction.js',
+              'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML',
+              function() { plot(); });
     </script>
   </body>
 </html>
