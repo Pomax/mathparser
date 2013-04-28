@@ -1,10 +1,15 @@
 var NumberNode = function(value) { this.value = parseFloat(value); };
 NumberNode.prototype = new FunctionTree();
-NumberNode.prototype.nf = function(val) { return val.toFixed(Math.log(1/val)/Math.log(10)); };
+NumberNode.prototype.nf = function(val) {
+  var cap = (""+val).length-1-(""+(val|0)).length;
+  if(cap<0) cap=0;
+  return val.toFixed(cap);
+};
 NumberNode.prototype.evaluate = function() { return this.value; };
-NumberNode.prototype.toString = function() { return "num:" + this.nf(this.value); };
+NumberNode.prototype.toString = function() { return /*"num:" +*/ this.nf(this.value); };
 NumberNode.prototype.toLaTeX = function() { return "{" + this.nf(this.value) + "}"; };
 NumberNode.prototype.getParameters = function() { return []; };
+NumberNode.prototype.derive = function(varname) { return this; };
 
 var SimpleNode = function(label) { this.label = label; };
 SimpleNode.prototype = new FunctionTree();
@@ -19,9 +24,8 @@ SimpleNode.prototype.evaluate$2 = function(var_names, values) {
       return values[i]; }}
   return false; };
 SimpleNode.prototype.getParameters = function() { return [this.label]; };
-SimpleNode.prototype.toString = function() { return "var:"+this.label; };
+SimpleNode.prototype.toString = function() { return /*"var:"+*/ this.label; };
 SimpleNode.prototype.toLaTeX = function() { return this.label; };
-
 
 var ConstantNode = function(label, value) { this.label = label; this.value = value; };
 ConstantNode.prototype = new NumberNode();

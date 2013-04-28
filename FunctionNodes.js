@@ -4,10 +4,16 @@ FunctionNode.prototype.setContent = function(content) {
   this.setLeaves(false,content);
   this.content = content;
 };
-FunctionNode.prototype.toString = function() { return "f:" + this.label + "(" + this.content.toString() + ")"; };
+FunctionNode.prototype.replace = function(varname, replacement) {
+  if(this.content instanceof SimpleNode && this.content.label===varname) {
+    var mf = new MathFunction(replacement.toString());
+    this.setContent(mf.functionTree);
+  } else { this.content.replace(varname, replacement); }
+};
+FunctionNode.prototype.toString = function() { return /*"f:" +*/ this.label + "(" + this.content.toString() + ")"; };
 FunctionNode.prototype.toLaTeX= function() { return this.label + "\\left ( " + this.content.toLaTeX() + " \\right ) "; };
 
-var WrapperNode  = function(content) { this.setContent(content); };
+var WrapperNode = function(content) { this.setContent(content); };
 WrapperNode.prototype = new FunctionNode("wrapper");
 WrapperNode.prototype.toString = function() { return "(" + this.content.toString() + ")"; };
 WrapperNode.prototype.toLaTeX = function() { return " \\left ( " + this.content.toLaTeX() + " \\right ) "; };

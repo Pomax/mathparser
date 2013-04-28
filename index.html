@@ -4,56 +4,116 @@
     <meta charset="utf8">
     <title>A JavaScript math function library</title>
     <style>
+      html, body { margin:0; padding:0; }
+      body>div {
+        padding: 1em; 
+        box-sizing: border-box;
+      }
+      h1 { text-align: center; background: #EEF; margin-top: 0; }
+      h3 { margin-top: 0; }
       div[style] { width: 49%; border: }
       code { background: #EEE; font-size: 90%; }
       dt { font-weight: bold; }
       input[type=range] { width: 70%; vertical-align:-0.7em; }
       input[type=text] { width: 2.4em; }
       figure { padding:5px; margin:0; border: 1px solid #CCC; width:400px; }
+      figure + figure { margin-top:5px; }
       figure div { text-align: center; }
+      figure.viewbox { background: #EEF; }
       #prettyFormula { text-align: center; }
       .MathJax_Display { width: 100%!important; tex-align: center!important; }
+      .column {
+        display: inline-block;
+        width:49%;
+        vertical-align: top;
+      }
     </style>
+    <style>
+      .tabtitles { 
+        margin-bottom: 1em;
+      }
+      .tabtitles span {
+        text-align: center;
+        border: 1px solid #DDD;
+        border-radius: 4px;
+        cursor: pointer;
+        box-sizing: border-box;
+        background: inherit;
+      }
+      .tabtitles span + span { margin-left: 1%; }
+      .tabtitles span.selected {
+        background: #EEF;
+      }
+    </style>
+    <script src="tabbing.js"></script>
   </head>
   <body>
 
-    <h2>A JavaScript plotting library</h2>
+    <h1>A JavaScript plotting library</h1>
 
-    <div style="float:left;">
-      <input type="text" id="function" value="sin(x) - tan(x) + cos(x^2.4)" style="width:400px">
-      <button onclick="plot()">plot</button>
-      <figure>
-        <div id="plots"></div>
-        <p id="prettyFormula"></p>
-        <div><input type="range" class="start" min="0" max="1000" step="1" value="0" onchange="plot()">
-          (start <span id='startval'></span>)
-        </div>
-        <div><input type="range" class="end" min="0" max="1000" step="1" value="1000" onchange="plot()">
-          (end <span id='endval'></span>)
-        </div>
-        <div><input type="range" class="step" min="1" max="10000" step="1" value="3000" onchange="plot()">
-          (step <span id='stepval'></span>)
-        </div>
-      </figure>
+    <div class="column">
+      <section class="tabbed" data-title="MathFunction">
+        <input type="text" class="function" value="sin(x) - tan(x) + cos(x^2.4)" style="width:400px" onchange="plot()">
+        <button onclick="plot()">plot</button>
+        <figure>
+          <div class="plots"></div>
+          <p class="prettyFormula"></p>
+          <div><input type="range" class="start" min="0" max="1000" step="1" value="0" onchange="plot()">
+            (start <span class='startval'></span>)
+          </div>
+          <div><input type="range" class="end" min="0" max="1000" step="1" value="1000" onchange="plot()">
+            (end <span class='endval'></span>)
+          </div>
+          <div><input type="range" class="step" min="1" max="10000" step="1" value="3000" onchange="plot()">
+            (step <span class='stepval'></span>)
+          </div>
+        </figure>
 
-      <figure>
-        <b>VIEWBOX</b>
-        minx: <input type="text" id="v_minx" value="-0.1" onchange="plot()">
-        maxx: <input type="text" id="v_maxx" value="10.1" onchange="plot()">
-        miny: <input type="text" id="v_miny" value="-100" onchange="plot()">
-        maxy: <input type="text" id="v_maxy" value="100" onchange="plot()">
-      </figure>
+        <figure class="viewbox">
+          <b>VIEWBOX</b>
+          minx: <input type="text" class="v_minx" value="-0.1" onchange="plot()">
+          maxx: <input type="text" class="v_maxx" value="10.1" onchange="plot()">
+          miny: <input type="text" class="v_miny" value="-100" onchange="plot()">
+          maxy: <input type="text" class="v_maxy" value="100" onchange="plot()">
+        </figure>
+      </section>
+
+      <section class="tabbed" data-title="MathFunction.Compound">
+        <input type="text" class="function" value="tan(cos(x)+sin(x)), sin(x+pi/3)" style="width:400px" onchange="plot()">
+        <button onclick="plot()">plot</button>
+        <figure>
+          <div class="plots"></div>
+          <p class="prettyFormula"></p>
+          <div><input type="range" class="start" min="0" max="1000" step="1" value="0" onchange="plot()">
+            (start <span class='startval'></span>)
+          </div>
+          <div><input type="range" class="end" min="0" max="1000" step="1" value="629" onchange="plot()">
+            (end <span class='endval'></span>)
+          </div>
+          <div><input type="range" class="step" min="1" max="10000" step="1" value="3000" onchange="plot()">
+            (step <span class='stepval'></span>)
+          </div>
+        </figure>
+
+        <figure class="viewbox">
+          <b>VIEWBOX</b>
+          minx: <input type="text" class="v_minx" value="-7" onchange="plot()">
+          maxx: <input type="text" class="v_maxx" value="7" onchange="plot()">
+          miny: <input type="text" class="v_miny" value="-1.5" onchange="plot()">
+          maxy: <input type="text" class="v_maxy" value="1.5" onchange="plot()">
+        </figure>
+
+      </section>
 
     </div>
 
-    <div style="float:right;">
+    <div class="column">
       <h3>A bit of API</h3>
       <p>This library gives you a <code>MathFunction</code> object, which is created
       with a function string as constructor argument, such as <code>new MathFuction("sin(x)
-      - tan(x) + cos(x^2.4)")</code>. You can also set up a parametric function (in two dimensions)
-      by comma-separating the functions, such as <code>new MathFunction("cos(x), sin(x)")</code>.
-      If your function was balanced (i.e. all the opening parentheses have matching closing
-      parentheses) you can use the following API (if unbalanced, the constructor throws an
+      - tan(x) + cos(x^2.4)")</code>. You can also set up a parametric function by using the
+      <code>MathFunction.Compound</code> object, such as <code>new MathFunction.Compound("cos(x)",
+      "sin(x)")</code>. If your function was balanced (i.e. all the opening parentheses have matching closing parentheses) you can use the following API (if unbalanced, the constructor throws an
       error for you to catch):</p>
 
       <dl>
@@ -84,29 +144,56 @@
         <dd>sum, prod</dd>
 
         <dt>special aggregators</dt>
-        <dd>area(start, end, steps, varname, [function])</dd>
+        <dd>area(start, end, steps, varname, [function]) - this computes the naive Newtonean area
+          underneath a function by, essentially, adding the areas of rectangular strips. I kind of
+          want to replace this with Legendre-Gauss integration, but for now, this works.</dd>
+      </dl>
+
+      <h3>Function substitution</h3>
+      <p>The MathFunction object understands variable/function substitution, using the
+      <code>replace</code> function.</p>
+
+      <dl>
+        <dt>replace(varname, [string or MathFunction])</dt>
+        <dd>replace all instances of a variable [varname] with the provided MathFunction
+        instead, or if a string was passed, the MathFunction resulting from <code>new
+        MathFunction(string)</code>.</dd>
       </dl>
     </div>
 
+    <h1>This library is still under construction</h1>
+
     <script src="head.js"></script>
     <script>
+      // sigh
+      NodeList.prototype.forEach =
+      HTMLCollection.prototype.forEach =
+      Array.prototype.forEach;
+
       /**
        * plotting function based on on-page parameters
        */
       function plot() {
-        var fn = document.querySelector("#function").value,
-            p = document.getElementById('prettyFormula'),
-            plotDiv = document.getElementById("plots"),
-            mathFunction = new MathFunction(fn),
-            start = (document.querySelector('input[type=range].start').value | 0)/100,
-            end   = (document.querySelector('input[type=range].end').value | 0)/100,
-            step  = (end-start)/(document.querySelector('input[type=range].step').value | 0);
+        var section = document.querySelector('section[data-visible]'),
+            fn = section.querySelector('.function').value,
+            p = section.querySelector('.prettyFormula'),
+            plotDiv = section.querySelector('.plots'),
+            mathFunction;
+
+        if(fn.indexOf(',')!==-1) {
+          args = fn.split(',');
+          mathFunction = new MathFunction.Compound(args);
+        } else { mathFunction = new MathFunction(fn) }
+
+        var start = (section.querySelector('input[type=range].start').value | 0)/100,
+            end   = (section.querySelector('input[type=range].end').value | 0)/100,
+            step  = (end-start)/(section.querySelector('input[type=range].step').value | 0);
 
         end = (end>start ? end : start + 0.1);
         step = (step>0 ? step : 0.001);
-        document.querySelector('#startval').innerHTML = Math.round(start*1000)/1000;
-        document.querySelector('#endval').innerHTML = Math.round(end*1000)/1000;
-        document.querySelector('#stepval').innerHTML = Math.round(step*100000)/100000;
+        section.querySelector('.startval').innerHTML = Math.round(start*1000)/1000;
+        section.querySelector('.endval').innerHTML   = Math.round(end*1000)/1000;
+        section.querySelector('.stepval').innerHTML  = Math.round(step*100000)/100000;
 
         var options = {
               width: 400,
@@ -127,10 +214,10 @@
 
         // plot formula
         var viewbox = {
-          minx: parseFloat(document.querySelector("#v_minx").value),
-          maxx: parseFloat(document.querySelector("#v_maxx").value),
-          miny: parseFloat(document.querySelector("#v_miny").value),
-          maxy: parseFloat(document.querySelector("#v_maxy").value),
+          minx: parseFloat(section.querySelector(".v_minx").value),
+          maxx: parseFloat(section.querySelector(".v_maxx").value),
+          miny: parseFloat(section.querySelector(".v_miny").value),
+          maxy: parseFloat(section.querySelector(".v_maxy").value),
           axes: { x: 0, y: 0 }
         };
 
@@ -149,7 +236,18 @@
               'AggregatorNodes.js',
               'MathFunction.js',
               'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML',
-              function() { plot(); });
+              function() { 
+                var activeSections = document.querySelectorAll('section[class=tabbed]');
+                activeSections.forEach(function(s) {
+                  s.onreveal = function() { setTimeout(plot, 50); }
+                })
+                plot(); 
+              });
     </script>
+    <!--
+      var m = new MathFunction("sin(x)"),
+          n = new MathFunction("cos(x)");
+      m.functionTree.y.replace('x', n.functionTree.y);
+    -->
   </body>
 </html>

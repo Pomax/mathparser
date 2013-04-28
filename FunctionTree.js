@@ -59,5 +59,13 @@ FunctionTree.prototype = {
       data.push([i, v]);
     }
     return data;
+  },
+  /**
+   * replace a variable with name [varname] with [replacement]
+   */
+  replace: function(varname, replacement) {
+    var left = this.left, right = this.right;
+    if(left && left instanceof SimpleNode && left.label===varname) { this.left = replacement; }
+    if(right && right instanceof SimpleNode && right.label===varname) { this.right = replacement; }
   }
 };

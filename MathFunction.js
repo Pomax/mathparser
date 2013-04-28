@@ -38,48 +38,31 @@
 
   var MathFunction = function(functionText) {
     this.plotCanvas = false;
-    this.functionString = {x: "", y: ""};
-    this.LaTeX = {x:"", y:""};
-    this.arithmeticFragment = {x:false, y:false};
-    this.functionTree = {x:false, y:false};
+    this.functionString = "";
+    this.LaTeX = "";
+    this.arithmeticFragment = false;
+    this.functionTree = false;
     this.init(functionText);
-  }
+  };
 
   MathFunction.prototype = {
     /**
      * initialise this math function
      */
     init: function(functionString) {
-      var spl = functionString.split(','),
-          functionStringY = spl[1] ? spl[1] : spl[0],
-          functionStringX = spl[1] ? spl[0] : false;
-      this.functionString.y = functionStringY.replace(/\s/g,'');
-      this.arithmeticFragment.y = new ArithmeticFragment(this.functionString.y);
-      var balance = this.arithmeticFragment.y.getBalance(); 
+      this.functionString = functionString.replace(/\s/g,'');
+      this.arithmeticFragment = new ArithmeticFragment(this.functionString);
+      var balance = this.arithmeticFragment.getBalance();
       if(balance===0) {
-        this.functionTree.y = this.arithmeticFragment.y.formFunctionTree();
-        this.LaTeX.y = this.functionTree.y.toLaTeX();
-      } else { throw "Function for Y is unbalanced: "+this.arithmeticFragment.y.toString()+" has "+balance+" open groups"; }
-      // parametric function?
-      if(functionStringX) {
-        this.functionString.x = functionStringX.replace(/\s/g,''); 
-        this.arithmeticFragment.x = new ArithmeticFragment(this.functionString.x);
-        var balance = this.arithmeticFragment.x.getBalance(); 
-        if(balance===0) {
-          this.functionTree.x = this.arithmeticFragment.x.formFunctionTree();
-          this.LaTeX.x = this.functionTree.x.toLaTeX();
-        } else { throw "Function for X is unbalanced: "+this.arithmeticFragment.x.toString()+" has "+balance+" open groups"; }
-      }
+        this.functionTree = this.arithmeticFragment.formFunctionTree();
+        this.LaTeX = this.functionTree.toLaTeX();
+      } else { throw "Function is unbalanced: "+this.arithmeticFragment.toString()+" has "+balance+" open groups"; }
     },
     /**
      * show the function on the page, in LaTeX format. Typeset with MathJax, if available
      */
     render: function(container) {
-      var str = "\\[";
-      if(this.LaTeX.x) { str += "\\begin{matrix} f_x(...) = " + this.LaTeX.x + " \\\\ \n"; }
-      str += "f_y(...) = " + this.LaTeX.y;
-      if(this.LaTeX.x) { str += "\n\\end{matrix}"; }
-      str += "\\]";
+      var str = "\\[" + this.LaTeX + "\\]";
       container.innerHTML = str;
       if(MathJax) { MathJax.Hub.Queue(["Typeset", MathJax.Hub]); }
     },
@@ -100,11 +83,10 @@
         context = this.plotCanvas.getContext("2d");
         this.clear(context);
       } else { context = this.plotCanvas.getContext("2d"); }
-      var plotData = {
-            x: (this.functionTree.x ? this.functionTree.x.plot( options.variable, options.start, options.end, options.step, options.clamps) : false),
-            y: this.functionTree.y.plot( options.variable, options.start, options.end, options.step, options.clamps)
-          },
-          minmax = {minx:viewbox.minx, maxx:viewbox.maxx, miny:viewbox.miny, maxy:viewbox.maxy, asymptotes:[]};
+      var o = options,
+          plotData = this.functionTree.plot(o.variable, o.start, o.end, o.step, o.clamps),
+          v = viewbox,
+          minmax = {minx:v.minx, maxx:v.maxx, miny:v.miny, maxy:v.maxy, asymptotes:[]};
       this.drawAxes(context, viewbox.axes, minmax);
       this.drawPlotData(context, plotData, minmax);
     },
@@ -112,6 +94,8 @@
      * draw the plot axes
      */
     drawAxes: function(context, axes, minmax) {
+      axes = axes || {x:0, y:0};
+
       var axis = map(axes.x, minmax.minx ,minmax.maxx, 0, 400);
       context.strokeStyle = "#999";
       context.moveTo(axis, 0);
@@ -132,14 +116,14 @@
       var context = this.plotCanvas.getContext("2d"),
           asymptotes = minmax.asymptotes;
       context.strokeStyle = "black";
-      var i, last=plotData.y.length, px, x, y, pf = (plotData.x!==false);
+      var i, last=plotData.length, ox, x, y;
       for(i=0; i<last; i++) {
-        px = (pf ? plotData.x[i][1] : plotData.y[i][0]);
-        x = map(px, minmax.minx ,minmax.maxx, 0, 400);
-        y = map(plotData.y[i][1], minmax.miny, minmax.maxy, 400, 0);
+        ox = plotData[i][0];
+        x = map(ox, minmax.minx ,minmax.maxx, 0, 400);
+        y = map(plotData[i][1], minmax.miny, minmax.maxy, 400, 0);
         asym = hasAsymptote(x,y);
         if(asym) {
-          asymptotes.push(px);
+          asymptotes.push(ox);
           context.stroke();
           context.beginPath();
           first = true;
@@ -171,8 +155,134 @@
       context.fillStyle="white";
       context.clearRect(0,0,400,400);
       context.translate(0.5,0.5);
-    }
+    },
+    /**
+     * Substitute a variable with a function
+     */
+    replace: function(varname, mf) {
+      if(typeof mf === "string") { mf = new MathFunction(mf); }
+      this.functionTree.replace(varname, mf.functionTree);
+      var fstr = this.functionTree.toString();
+      mf = new MathFunction(this.functionTree.toString());
+      this.functionString = mf.functionString;
+      this.LaTeX = mf.LaTeX;
+      this.arithmeticFragment = mf.arithmeticFragment;
+      this.functionTree = mf.functionTree;
+    },
+    toString: function() { return this.functionString; },
+    toLaTeX: function() { return this.LaTeX; }
   };
 
+  /**
+   * Parametric function
+   */
+  MathFunction.Compound = function(fns) {
+    var functions = [];
+    var addMathFunction = function(string) { functions.push(new MathFunction(string)); };
+    if(fns instanceof Array) { fns.forEach(addMathFunction); }
+    else { Array.prototype.forEach.call(arguments, addMathFunction); }
+    this.functions = functions;
+  };
+  MathFunction.Compound.prototype = {
+    /**
+     * show the function on the page, in LaTeX format. Typeset with MathJax, if available
+     */
+    render: function(container) {
+      var str = "\\[\\left \\{ \\begin{array}{l}\n", ltx = [], i=1;
+      this.functions.forEach(function(mf) {
+        ltx.push("f_" + (i++) + " = " + mf.LaTeX);
+      });
+      str += ltx.join("\\\\\n") + "\n\\end{array} \\right . \\]";
+      container.innerHTML = str;
+      if(MathJax) { MathJax.Hub.Queue(["Typeset", MathJax.Hub]); }
+    },
+    /**
+     * Plot a compound function. The options object is similar to
+     * the one used for MathFunction, but has an extra property
+     * "order", which is an array [<num>,<num>[,<num>]*] that
+     * indicates which function to use for x, y, (z, etc).
+     */
+    plot: function(container, options, viewbox) {
+      viewbox = viewbox || {minx:0, maxx:container.clientWidth, miny:0, maxy:container.clientHeight};
+      var context;
+      if(!this.plotCanvas) {
+        var canvas = document.createElement("canvas");
+        canvas.width = options.width || 400;
+        canvas.height = options.height || 400;
+        canvas.style.border = "1px solid black";
+        container.innerHTML="";
+        container.appendChild(canvas);
+        this.plotCanvas = canvas;
+        context = this.plotCanvas.getContext("2d");
+        MathFunction.prototype.clear(context);
+        this.functions.forEach(function(mf) {
+          mf.plotCanvas = canvas;
+        });
+      } else { context = this.plotCanvas.getContext("2d"); }
+      var o = options,
+          plotData = [],
+          minmax = [],
+          v = viewbox;
+      this.functions.forEach(function(mf) {
+        plotData.push(mf.functionTree.plot(o.variable, o.start, o.end, o.step, o.clamps));
+        minmax.push({minx:v.minx, maxx:v.maxx, miny:v.miny, maxy:v.maxy, asymptotes:[]});
+      });
+      this.drawAxes(context, viewbox.order, viewbox.axes, minmax);
+      this.drawPlotData(context, viewbox.order, plotData, minmax);
+    },
+    /**
+     * draw the plot axes
+     */
+    drawAxes: function(context, order, axes, minmax) {
+      order = order || [0,1];
+      axes = axes || {x:0,y:0};
+      var xid = order[0], yid = order[1];
+
+      var axis = map(axes.x, minmax[xid].minx ,minmax[xid].maxx, 0, 400);
+      context.strokeStyle = "#999";
+      context.moveTo(axis, 0);
+      context.lineTo(axis, 400);
+      context.stroke();
+      context.beginPath();
+
+      var axis = map(axes.y, minmax[yid].miny ,minmax[yid].maxy, 0, 400);
+      context.moveTo(0,axis);
+      context.lineTo(400,axis);
+      context.stroke();
+      context.beginPath();
+    },
+    /**
+     * draw the function onto the canvas
+     */
+    drawPlotData: function(context, order, plotData, minmax) {
+      order = order || [0,1];
+      var context = this.plotCanvas.getContext("2d"),
+          asymptotes = minmax.asymptotes;
+      context.strokeStyle = "black";
+      var i, last=plotData[0].length, ox, oy, x, y, xid=order[0], yid=order[1];
+      for(i=0; i<last; i++) {
+        ox = plotData[xid][i][1];
+        oy = plotData[yid][i][1];
+        x = map(ox, minmax[xid].minx, minmax[xid].maxx, 0, 400);
+        y = map(oy, minmax[yid].miny, minmax[yid].maxy, 400, 0);
+        context.lineTo(x,y);
+      };
+      context.stroke();
+    },
+    toString: function() {
+      var str = [];
+      this.functions.forEach(function(mf) {
+        str.push(mf.toString());
+      });
+      return str.join(", ");
+    },
+    toLaTeX: function() {
+      var str = [];
+      this.functions.forEach(function(mf) {
+        str.push(mf.toLaTeX());
+      });
+      return str;
+    }
+  };
   window.MathFunction = MathFunction;
 }());

@@ -20,14 +20,12 @@ AdditionNode.prototype.evaluate = function(var_names, values) {
   return left.evaluate(var_names, values) + right.evaluate(var_names, values);
 };
 
-
 var SubtractionNode = function(){};
 SubtractionNode.prototype = new OperatorNode("-", 1);
 SubtractionNode.prototype.evaluate = function(var_names, values) {
   var left = this.left, right = this.right;
   return left.evaluate(var_names, values) - right.evaluate(var_names, values);
 };
-
 
 var MultiplicationNode = function(){};
 MultiplicationNode.prototype = new OperatorNode("*", 2);
