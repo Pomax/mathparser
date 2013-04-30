@@ -6,7 +6,7 @@
     <style>
       html, body { margin:0; padding:0; }
       body>div {
-        padding: 1em; 
+        padding: 1em;
         box-sizing: border-box;
       }
       h1 { text-align: center; background: #EEF; margin-top: 0; }
@@ -29,7 +29,7 @@
       }
     </style>
     <style>
-      .tabtitles { 
+      .tabtitles {
         margin-bottom: 1em;
       }
       .tabtitles span {
@@ -45,7 +45,7 @@
         background: #EEF;
       }
     </style>
-    <script src="tabbing.js"></script>
+    <script src="./tabbing.js"></script>
   </head>
   <body>
 
@@ -163,7 +163,7 @@
 
     <h1>This library is still under construction</h1>
 
-    <script src="head.js"></script>
+    <script src="./head.js"></script>
     <script>
       // sigh
       NodeList.prototype.forEach =
@@ -236,12 +236,12 @@
               'AggregatorNodes.js',
               'MathFunction.js',
               'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML',
-              function() { 
+              function() {
                 var activeSections = document.querySelectorAll('section[class=tabbed]');
                 activeSections.forEach(function(s) {
                   s.onreveal = function() { setTimeout(plot, 50); }
                 })
-                plot(); 
+                plot();
               });
     </script>
     <!--
