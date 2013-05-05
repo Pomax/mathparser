@@ -1,0 +1,15 @@
+.tabtitles {
+  margin-bottom: 1em;
+}
+.tabtitles span {
+  text-align: center;
+  border: 1px solid #DDD;
+  border-radius: 4px;
+  cursor: pointer;
+  box-sizing: border-box;
+  background: inherit;
+}
+.tabtitles span + span { margin-left: 1%; }
+.tabtitles span.selected {
+  background: rgb(203, 255, 245);
+}

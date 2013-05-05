@@ -3,49 +3,9 @@
   <head>
     <meta charset="utf8">
     <title>A JavaScript math function library</title>
-    <style>
-      html, body { margin:0; padding:0; }
-      body>div {
-        padding: 1em;
-        box-sizing: border-box;
-      }
-      h1 { text-align: center; background: rgb(203, 255, 245); margin-top: 0; }
-      h3 { margin-top: 0; }
-      div[style] { width: 49%; border: }
-      code { background: #EEE; font-size: 90%; }
-      dt { font-weight: bold; }
-      input[type=range] { width: 70%; vertical-align:-0.7em; }
-      input[type=text] { width: 2.4em; }
-      figure { padding:5px; margin:0; border: 1px solid #CCC; width:400px; }
-      figure + figure { margin-top:5px; }
-      figure div { text-align: center; }
-      figure.viewbox { background: rgb(203, 255, 245); }
-      #prettyFormula { text-align: center; }
-      .MathJax_Display { width: 100%!important; tex-align: center!important; }
-      .column {
-        display: inline-block;
-        width:45%;
-        vertical-align: top;
-      }
-    </style>
-    <style>
-      .tabtitles {
-        margin-bottom: 1em;
-      }
-      .tabtitles span {
-        text-align: center;
-        border: 1px solid #DDD;
-        border-radius: 4px;
-        cursor: pointer;
-        box-sizing: border-box;
-        background: inherit;
-      }
-      .tabtitles span + span { margin-left: 1%; }
-      .tabtitles span.selected {
-        background: rgb(203, 255, 245);
-      }
-    </style>
-    <script src="./tabbing.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="toolkit/ttk-range.css">
+    <link rel="stylesheet" href="tabbing/tabbing.css">
   </head>
   <body>
 
@@ -58,13 +18,13 @@
         <figure>
           <div class="plots"></div>
           <p class="prettyFormula"></p>
-          <div><input type="range" class="start" min="0" max="1000" step="1" value="0" onchange="plot()">
+          <div><input type="range" class="start" min="0" max="10" step="0.01" value="0" onchange="plot()">
             (start <span class='startval'></span>)
           </div>
-          <div><input type="range" class="end" min="0" max="1000" step="1" value="1000" onchange="plot()">
+          <div><input type="range" class="end" min="0" max="10" step="0.01" value="10" onchange="plot()">
             (end <span class='endval'></span>)
           </div>
-          <div><input type="range" class="step" min="1" max="10000" step="1" value="3000" onchange="plot()">
+          <div><input type="range" class="step" min="0" max="0.01" step="0.0001" value="0.003" onchange="plot()">
             (step <span class='stepval'></span>)
           </div>
         </figure>
@@ -84,13 +44,13 @@
         <figure>
           <div class="plots"></div>
           <p class="prettyFormula"></p>
-          <div><input type="range" class="start" min="0" max="1000" step="1" value="0" onchange="plot()">
+          <div><input type="range" class="start" min="0" max="10" step="0.01" value="0" onchange="plot()">
             (start <span class='startval'></span>)
           </div>
-          <div><input type="range" class="end" min="0" max="1000" step="1" value="629" onchange="plot()">
+          <div><input type="range" class="end" min="0" max="10" step="0.01" value="6.29" onchange="plot()">
             (end <span class='endval'></span>)
           </div>
-          <div><input type="range" class="step" min="1" max="10000" step="1" value="3000" onchange="plot()">
+          <div><input type="range" class="step" min="0" max="0.01" step="0.00001" value="0.003" onchange="plot()">
             (step <span class='stepval'></span>)
           </div>
         </figure>
@@ -165,13 +125,6 @@
 
     <script src="./head.js"></script>
     <script>
-      // sigh... give the various list-like things a .forEach()
-      (function(n,h,p,fn){
-        var m = function(y) { y[p][fn] = Array[p][fn]; };
-        m(n);
-        m(h);
-      }(NodeList,HTMLCollection,"prototype","forEach"));
-
       /**
        * plotting function based on on-page parameters
        */
@@ -187,13 +140,15 @@
           mathFunction = new MathFunction.Compound(args);
         } else { mathFunction = new MathFunction(fn) }
 
-        window.mff = mathFunction;
+        var start = parseFloat(section.querySelector('div[type=range].start').get("value")),
+            end   = parseFloat(section.querySelector('div[type=range].end').get("value")),
+            step  = parseFloat(section.querySelector('div[type=range].step').get("value"));
 
-        var start = (section.querySelector('input[type=range].start').value | 0)/100,
-            end   = (section.querySelector('input[type=range].end').value | 0)/100,
-            step  = (end-start)/(section.querySelector('input[type=range].step').value | 0);
+        if(end<start) {
+          end = start + 0.1;
+          section.querySelector('div[type=range].end').set("value",end);
+        }
 
-        end = (end>start ? end : start + 0.1);
         step = (step>0 ? step : 0.001);
         section.querySelector('.startval').innerHTML = Math.round(start*1000)/1000;
         section.querySelector('.endval').innerHTML   = Math.round(end*1000)/1000;
@@ -232,7 +187,10 @@
       /**
        * load the MathFunction object
        */
-      head.js('http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML',
+      head.js('toolkit/ttk.js',
+              'toolkit/ttk-range.js',
+              'tabbing/tabbing.js',
+              'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML',
               'FunctionTree.js',
               'Tape.js',
               'ArithmeticFragment.js',
@@ -242,6 +200,7 @@
               'AggregatorNodes.js',
               'MathFunction.js',
               function() {
+                setupTabs();
                 var activeSections = document.querySelectorAll('section[class=tabbed]');
                 activeSections.forEach(function(s) {
                   s.onreveal = function() { setTimeout(plot, 50); }
