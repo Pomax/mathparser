@@ -18,16 +18,16 @@
   // take input element, hijack set() so that (type,range)
   // triggers a replacement, *IF* the element is in the DOM.
   (function($) {
-    var originalSetAttribute = $.setAttribute;
-    $.setAttribute = function(name, value) {
+    var originalSet= $.set;
+    $.set = function(name, value) {
       // only intercept type=range
       if (name !== "type" || value !== "range") {
-        return originalSetAttribute.apply(this, [name, value]);
+        return originalSet.apply(this, name, value);
       }
       // perform substitution
-      if (this.parent()) {
-        this.replace(substitute(this));
-      }
+      var newRange = substitute(this);
+      if (this.parent()) { this.replace(newRange); }
+      return newRange;
     }
   }(HTMLInputElement.prototype));
 

@@ -18,3 +18,9 @@ figure.viewbox { background: rgb(203, 255, 245); }
   vertical-align: top;
 }
 input[type=text] { width: 2.5em; font-size: 11px;}
+
+.clamps {
+  margin-top: 0.5em;
+  border: 1px solid black;
+  padding: 0 0.5em;
+}

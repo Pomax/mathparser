@@ -77,6 +77,12 @@
       } else { throw "Function is unbalanced: "+this.arithmeticFragment.toString()+" has "+balance+" open groups"; }
     },
     /**
+     * get all parameters used in this function
+     */
+    getParameters: function() {
+      return this.functionTree.getParameters();
+    },
+    /**
      * show the function on the page, in LaTeX format. Typeset with MathJax, if available
      */
     render: function(container) {
@@ -90,6 +96,7 @@
      * plot this function on the page
      */
     plot: function(container, options, viewbox) {
+      this.options = options;
       viewbox = viewbox || {minx:0, maxx:container.clientWidth, miny:0, maxy:container.clientHeight};
       var context;
       if(!this.plotCanvas) {
@@ -175,10 +182,9 @@
      * clear the canvas. We should only do this automatically on a freshly built canvas.
      */
     clear: function(context) {
-      context = context || this.plotCanvas.getContext("2d");
-      context.fillStyle="white";
-      context.clearRect(0,0,400,400);
-      context.translate(0.5,0.5);
+      if(!this.plotCanvas) return;
+      this.plotCanvas.width = this.options.width;
+      this.plotCanvas.height = this.options.height;
     },
     /**
      * Substitute a variable with a function
@@ -209,6 +215,17 @@
   };
   MathFunction.Compound.prototype = {
     /**
+     * get all parameters used in this compound function
+     */
+    getParameters: function() {
+      var parameters = [];
+      this.functions.forEach(function(f) {
+        f.functionTree.getParameters().forEach(function(p) {
+          if(parameters.indexOf(p)===-1) {
+            parameters.push(p); }})});
+      return parameters;
+    },
+    /**
      * show the function on the page, in LaTeX format. Typeset with MathJax, if available
      */
     render: function(container) {
@@ -227,6 +244,7 @@
      * indicates which function to use for x, y, (z, etc).
      */
     plot: function(container, options, viewbox) {
+      this.options = options;
       viewbox = viewbox || {minx:0, maxx:container.clientWidth, miny:0, maxy:container.clientHeight};
       var context;
       if(!this.plotCanvas) {
@@ -240,7 +258,7 @@
         container.appendChild(canvas);
         this.plotCanvas = canvas;
         context = this.plotCanvas.getContext("2d");
-        MathFunction.prototype.clear(context);
+        this.clear(context);
         this.functions.forEach(function(mf) {
           mf.plotCanvas = canvas;
         });
@@ -283,8 +301,7 @@
      */
     drawPlotData: function(context, order, plotData, minmax) {
       order = order || [0,1];
-      var context = this.plotCanvas.getContext("2d"),
-          asymptotes = minmax.asymptotes;
+      var context = this.plotCanvas.getContext("2d");
       context.strokeStyle = "black";
       var i, last=plotData[0].length, ox, oy, x, y, xid=order[0], yid=order[1];
       for(i=0; i<last; i++) {
@@ -295,6 +312,12 @@
         context.lineTo(x,y);
       };
       context.stroke();
+    },
+    /**
+     * clear all plots so far
+     */
+    clear: function(context) {
+      MathFunction.prototype.clear.call(this,context);
     },
     toString: function() {
       var str = [];
@@ -311,5 +334,7 @@
       return str;
     }
   };
+
+  // bind object
   window.MathFunction = MathFunction;
 }(window, document, window.console, MathJax, isNaN, Math.pow));
