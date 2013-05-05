@@ -9,7 +9,7 @@
         padding: 1em;
         box-sizing: border-box;
       }
-      h1 { text-align: center; background: #EEF; margin-top: 0; }
+      h1 { text-align: center; background: rgb(203, 255, 245); margin-top: 0; }
       h3 { margin-top: 0; }
       div[style] { width: 49%; border: }
       code { background: #EEE; font-size: 90%; }
@@ -19,7 +19,7 @@
       figure { padding:5px; margin:0; border: 1px solid #CCC; width:400px; }
       figure + figure { margin-top:5px; }
       figure div { text-align: center; }
-      figure.viewbox { background: #EEF; }
+      figure.viewbox { background: rgb(203, 255, 245); }
       #prettyFormula { text-align: center; }
       .MathJax_Display { width: 100%!important; tex-align: center!important; }
       .column {
@@ -42,7 +42,7 @@
       }
       .tabtitles span + span { margin-left: 1%; }
       .tabtitles span.selected {
-        background: #EEF;
+        background: rgb(203, 255, 245);
       }
     </style>
     <script src="./tabbing.js"></script>
@@ -165,10 +165,12 @@
 
     <script src="./head.js"></script>
     <script>
-      // sigh
-      NodeList.prototype.forEach =
-      HTMLCollection.prototype.forEach =
-      Array.prototype.forEach;
+      // sigh... give the various list-like things a .forEach()
+      (function(n,h,p,fn){
+        var m = function(y) { y[p][fn] = Array[p][fn]; };
+        m(n);
+        m(h);
+      }(NodeList,HTMLCollection,"prototype","forEach"));
 
       /**
        * plotting function based on on-page parameters
@@ -185,6 +187,8 @@
           mathFunction = new MathFunction.Compound(args);
         } else { mathFunction = new MathFunction(fn) }
 
+        window.mff = mathFunction;
+
         var start = (section.querySelector('input[type=range].start').value | 0)/100,
             end   = (section.querySelector('input[type=range].end').value | 0)/100,
             step  = (end-start)/(section.querySelector('input[type=range].step').value | 0);
@@ -197,22 +201,24 @@
 
         var options = {
               width: 400,
-              height: 400,
-              variable: 'x',
-              start: start,
-              end: end,
-              step: step,
-              clamps: [
-                {label:'a',value:1},
-                {label:'b',value:1},
-                {label:'y',value:Math.PI}
+              height: 200,
+              variable: {
+                label: 'x',
+                start: start,
+                end: end,
+                step: step
+              },
+              clamped: [
+                {label: 'a', value: 1.5},
+                {label: 'b', value: 3.0},
+                {label: 'y', value: 3.14}
               ]
             };
 
         // show formula on the page
         mathFunction.render(p);
 
-        // plot formula
+        // plot the math function into the page
         var viewbox = {
           minx: parseFloat(section.querySelector(".v_minx").value),
           maxx: parseFloat(section.querySelector(".v_maxx").value),
@@ -220,14 +226,14 @@
           maxy: parseFloat(section.querySelector(".v_maxy").value),
           axes: { x: 0, y: 0 }
         };
-
         mathFunction.plot(plotDiv, options, viewbox);
       }
 
       /**
        * load the MathFunction object
        */
-      head.js('FunctionTree.js',
+      head.js('http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML',
+              'FunctionTree.js',
               'Tape.js',
               'ArithmeticFragment.js',
               'SimpleNodes.js',
@@ -235,7 +241,6 @@
               'FunctionNodes.js',
               'AggregatorNodes.js',
               'MathFunction.js',
-              'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML',
               function() {
                 var activeSections = document.querySelectorAll('section[class=tabbed]');
                 activeSections.forEach(function(s) {
@@ -244,10 +249,5 @@
                 plot();
               });
     </script>
-    <!--
-      var m = new MathFunction("sin(x)"),
-          n = new MathFunction("cos(x)");
-      m.functionTree.y.replace('x', n.functionTree.y);
-    -->
   </body>
 </html>

@@ -6,10 +6,10 @@ OperatorNode.prototype = new FunctionTree();
 OperatorNode.prototype.getStrength = function() { return this.strength; }
 OperatorNode.prototype.toString = function() {
   var left = this.left, right = this.right;
-  return "(" + (left ? left.toString() : "") + this.operator + (right ? right.toString() : "") + ")";
+  return (left ? left.toString() : "") + this.operator + (right ? right.toString() : "");
 };
 OperatorNode.prototype.toLaTeX = function() {
-  return this.left.toLaTeX() + this.operator + this.right.toLaTeX(); 
+  return this.left.toLaTeX() + this.operator + this.right.toLaTeX();
 };
 
 
@@ -34,7 +34,7 @@ MultiplicationNode.prototype.evaluate = function(var_names, values) {
   return left.evaluate(var_names, values) * right.evaluate(var_names, values);
 };
 MultiplicationNode.prototype.toLaTeX = function() {
-  return this.left.toLaTeX() + " \\cdot " + this.right.toLaTeX(); 
+  return this.left.toLaTeX() + " \\cdot " + this.right.toLaTeX();
 };
 
 

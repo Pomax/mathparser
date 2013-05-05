@@ -1,10 +1,23 @@
 /**
  * Mathematical function object.
  */
-(function(){
+(function loadMathParser(window, document, console, MathJax, isNaN, pow) {
 
   /**
-   * naive asymptote finding. Works by constructing a dy/dx value
+   * If we don't have MathJax, we can still plot, just not render
+   * pretty formulae.
+   */
+  if(!MathJax) {
+    if(console && console.warn) {
+      console.warn("MathJax is not available, math functions will not be able to render LaTeX.");
+    }
+  }
+
+  /**
+   * Naive asymptote finding. Works by constructing a running dy/dx value
+   * and seeing whether the transition from "previous" to "current" is
+   * reasonably speaking impossible. Note: the lower the fidelity, they more
+   * like that this generates false positives.
    */
   var hasAsymptote = (function() {
     var px = false, py = false, dp = false, threshold = 4;
@@ -21,20 +34,25 @@
   }());
 
   /**
-   * generic mapping function, with safeties.
+   * Generic mapping function, with safeties. Note that this is a generator,
+   * and yields a map function based on the indicated target domain.
    */
-  var map = function(value, d1, d2, r1, r2, retval) {
-    if(isNaN(value)) return false;
-    if(value==Infinity) { return Math.pow(2,31); }
-    if(value==-Infinity) { return -Math.pow(2,31); }
-    retval = r1 + (r2 - r1) * ((value - d1) / (d2 - d1));
-    if(isNaN(retval)) return false;
-    if(retval==Infinity) { return Math.pow(2,31); }
-    if(retval==-Infinity) { return -Math.pow(2,31); }
-    return retval;
+  var map = function(r1, r2) {
+    return function(value, d1, d2, retval) {
+      if(isNaN(value)) return false;
+      if(value==Infinity) { return pow(2,31); }
+      if(value==-Infinity) { return -pow(2,31); }
+      retval = r1 + (r2 - r1) * ((value - d1) / (d2 - d1));
+      if(isNaN(retval)) return false;
+      if(retval==Infinity) { return pow(2,31); }
+      if(retval==-Infinity) { return -pow(2,31); }
+      return retval;
+    };
   };
 
+
 // ==========================================
+
 
   var MathFunction = function(functionText) {
     this.plotCanvas = false;
@@ -62,9 +80,11 @@
      * show the function on the page, in LaTeX format. Typeset with MathJax, if available
      */
     render: function(container) {
-      var str = "\\[" + this.LaTeX + "\\]";
-      container.innerHTML = str;
-      if(MathJax) { MathJax.Hub.Queue(["Typeset", MathJax.Hub]); }
+      if(MathJax) {
+        var str = "\\[" + this.LaTeX + "\\]";
+        container.innerHTML = str;
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]);
+      } else { container.innerHTML = this.functionTree.toString(); }
     },
     /**
      * plot this function on the page
@@ -75,7 +95,9 @@
       if(!this.plotCanvas) {
         var canvas = document.createElement("canvas");
         canvas.width = options.width || 400;
+        this.mapx = map(0,canvas.width);
         canvas.height = options.height || 400;
+        this.mapy = map(canvas.height,0);
         canvas.style.border = "1px solid black";
         container.innerHTML="";
         container.appendChild(canvas);
@@ -84,7 +106,8 @@
         this.clear(context);
       } else { context = this.plotCanvas.getContext("2d"); }
       var o = options,
-          plotData = this.functionTree.plot(o.variable, o.start, o.end, o.step, o.clamps),
+          c = o.variable,
+          plotData = this.functionTree.plot(c.label, c.start, c.end, c.step, o.clamped),
           v = viewbox,
           minmax = {minx:v.minx, maxx:v.maxx, miny:v.miny, maxy:v.maxy, asymptotes:[]};
       this.drawAxes(context, viewbox.axes, minmax);
@@ -96,14 +119,14 @@
     drawAxes: function(context, axes, minmax) {
       axes = axes || {x:0, y:0};
 
-      var axis = map(axes.x, minmax.minx ,minmax.maxx, 0, 400);
+      var axis = this.mapx(axes.x, minmax.minx ,minmax.maxx);
       context.strokeStyle = "#999";
       context.moveTo(axis, 0);
       context.lineTo(axis, 400);
       context.stroke();
       context.beginPath();
 
-      var axis = map(axes.y, minmax.miny ,minmax.maxy, 0, 400);
+      var axis = this.mapy(axes.y, minmax.miny ,minmax.maxy);
       context.moveTo(0,axis);
       context.lineTo(400,axis);
       context.stroke();
@@ -119,8 +142,8 @@
       var i, last=plotData.length, ox, x, y;
       for(i=0; i<last; i++) {
         ox = plotData[i][0];
-        x = map(ox, minmax.minx ,minmax.maxx, 0, 400);
-        y = map(plotData[i][1], minmax.miny, minmax.maxy, 400, 0);
+        x = this.mapx(ox, minmax.minx ,minmax.maxx);
+        y = this.mapy(plotData[i][1], minmax.miny, minmax.maxy);
         asym = hasAsymptote(x,y);
         if(asym) {
           asymptotes.push(ox);
@@ -136,10 +159,11 @@
      * draw asymptotes, if the function has any
      */
     drawAsymptotes: function(context, minmax) {
+      var mp = this;
       if(!this.functionTree.x) {
         context.strokeStyle = "rgba(255,0,0,0.5)";
         minmax.asymptotes.forEach(function(x){
-          x = map(x,minmax.minx,minmax.maxx,0,400);
+          x = mp.mapx(x,minmax.minx,minmax.maxx);
           context.beginPath();
           context.moveTo(x,0);
           context.lineTo(x,400);
@@ -174,7 +198,7 @@
   };
 
   /**
-   * Parametric function
+   * Compound (parametric) function
    */
   MathFunction.Compound = function(fns) {
     var functions = [];
@@ -194,7 +218,7 @@
       });
       str += ltx.join("\\\\\n") + "\n\\end{array} \\right . \\]";
       container.innerHTML = str;
-      if(MathJax) { MathJax.Hub.Queue(["Typeset", MathJax.Hub]); }
+      if(MathJax) { MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]); }
     },
     /**
      * Plot a compound function. The options object is similar to
@@ -208,7 +232,9 @@
       if(!this.plotCanvas) {
         var canvas = document.createElement("canvas");
         canvas.width = options.width || 400;
+        this.mapx = map(0,canvas.width);
         canvas.height = options.height || 400;
+        this.mapy = map(canvas.height,0);
         canvas.style.border = "1px solid black";
         container.innerHTML="";
         container.appendChild(canvas);
@@ -220,11 +246,12 @@
         });
       } else { context = this.plotCanvas.getContext("2d"); }
       var o = options,
+          c = options.variable,
           plotData = [],
           minmax = [],
           v = viewbox;
       this.functions.forEach(function(mf) {
-        plotData.push(mf.functionTree.plot(o.variable, o.start, o.end, o.step, o.clamps));
+        plotData.push(mf.functionTree.plot(c.label, c.start, c.end, c.step, o.clamped));
         minmax.push({minx:v.minx, maxx:v.maxx, miny:v.miny, maxy:v.maxy, asymptotes:[]});
       });
       this.drawAxes(context, viewbox.order, viewbox.axes, minmax);
@@ -238,14 +265,14 @@
       axes = axes || {x:0,y:0};
       var xid = order[0], yid = order[1];
 
-      var axis = map(axes.x, minmax[xid].minx ,minmax[xid].maxx, 0, 400);
+      var axis = this.mapx(axes.x, minmax[xid].minx ,minmax[xid].maxx);
       context.strokeStyle = "#999";
       context.moveTo(axis, 0);
       context.lineTo(axis, 400);
       context.stroke();
       context.beginPath();
 
-      var axis = map(axes.y, minmax[yid].miny ,minmax[yid].maxy, 0, 400);
+      var axis = this.mapy(axes.y, minmax[yid].miny ,minmax[yid].maxy);
       context.moveTo(0,axis);
       context.lineTo(400,axis);
       context.stroke();
@@ -263,8 +290,8 @@
       for(i=0; i<last; i++) {
         ox = plotData[xid][i][1];
         oy = plotData[yid][i][1];
-        x = map(ox, minmax[xid].minx, minmax[xid].maxx, 0, 400);
-        y = map(oy, minmax[yid].miny, minmax[yid].maxy, 400, 0);
+        x = this.mapx(ox, minmax[xid].minx, minmax[xid].maxx);
+        y = this.mapy(oy, minmax[yid].miny, minmax[yid].maxy);
         context.lineTo(x,y);
       };
       context.stroke();
@@ -285,4 +312,4 @@
     }
   };
   window.MathFunction = MathFunction;
-}());
+}(window, document, window.console, MathJax, isNaN, Math.pow));
