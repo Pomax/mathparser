@@ -11,5 +11,6 @@
 }
 .tabtitles span + span { margin-left: 1%; }
 .tabtitles span.selected {
-  background: rgb(203, 255, 245);
+  background: rgb(92, 128, 196);
+  color: rgb(189, 201, 209);
 }
