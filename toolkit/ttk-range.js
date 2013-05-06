@@ -110,6 +110,21 @@
       }
     });
 
+    // touch handling
+    rails.listen("touchmove", function(evt) {
+      if (evt.targetTouches.length == 1) {
+        var touch = event.targetTouches[0];
+        rails.set("sdown", true);
+        evt.clientX = touch.pageX;
+        reposition(rails, slider, evt);
+      }
+      return false;
+    });
+    rails.listen("touchend", function(evt) {
+      rails.set("sdown", false);
+      return false;
+    });
+
     // but when the mouse is down, response is
     // handled by the document.
     document.listen("mousemove", function(evt) {
