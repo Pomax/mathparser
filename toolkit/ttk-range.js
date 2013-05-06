@@ -12,6 +12,37 @@
 **/
 (function(window) {
 
+  // code from http://stackoverflow.com/questions/1517924
+  // "javascript-mapping-touch-events-to-mouse-events#1781750"
+  function touchHandler(event) {
+    var touches = event.changedTouches,
+        first = touches[0],
+        type = "";
+    switch(event.type) {
+      case "touchstart": type = "mousedown"; break;
+      case "touchmove":  type="mousemove"; break;
+      case "touchend":   type="mouseup"; break;
+      default: return; }
+
+    // initMouseEvent(type, canBubble, cancelable, view, clickCount,
+    //                screenX, screenY, clientX, clientY, ctrlKey,
+    //                altKey, shiftKey, metaKey, button, relatedTarget);
+    var simulatedEvent = document.createEvent("MouseEvent");
+    simulatedEvent.initMouseEvent(type, true, true, window, 1,
+                              first.screenX, first.screenY,
+                              first.clientX, first.clientY, false,
+                              false, false, false, 0/*left*/, null);
+    first.target.dispatchEvent(simulatedEvent);
+    event.preventDefault();
+  }
+
+  function wrapTouchToMouse(element) {
+    element.listen("touchstart", touchHandler, true);
+    element.listen("touchmove", touchHandler, true);
+    element.listen("touchend", touchHandler, true);
+    element.listen("touchcancel", touchHandler, true);
+  }
+
   // is toolkit loaded?
   if(!window["Toolkit"]) return;
 
@@ -31,6 +62,9 @@
     }
   }(HTMLInputElement.prototype));
 
+  // cached value for the slider position during reposition()/3
+  var prevx = -1;
+
   /**
    * universal slider repositioning
    */
@@ -41,22 +75,26 @@
         min = rpos.left,
         max = rpos.right - slider.position().width,
         oldval = parseFloat(rails.get("value"));
-    if (min <= x && x <= max) {
-      x -= min;
-      var ncmin = parseFloat(rails.get("min")),
-          ncmax = parseFloat(rails.get("max")),
-          step = parseFloat(rails.get("step")),
-          ratio = x / (max - min),
-          value = ncmin + step*(Math.round(ratio * (ncmax - ncmin) / step));
-      if (value > ncmax || value === oldval) return;
-      oldval = value;
-      slider.css("left", parseInt(1000 * (value - ncmin) / (ncmax-ncmin)) / 10 + "%");
-      slider.set("title",value);
-      rails.set("value",value);
-      if (rails.onchange) {
-        rails.onchange({value: value});
-      }
-    };
+    // correct if necessary
+    if(x<min) x = min;
+    if(x>max) x = max;
+    x -= min;
+    // stop if the position won't change
+    if(x===prevx) return;
+    // reposition slider head
+    var ncmin = parseFloat(rails.get("min")),
+        ncmax = parseFloat(rails.get("max")),
+        step = parseFloat(rails.get("step")),
+        ratio = x / (max - min),
+        value = ncmin + step*(Math.round(ratio * (ncmax - ncmin) / step));
+    if (value > ncmax || value === oldval) return;
+    oldval = value;
+    slider.css("left", parseInt(1000 * (value - ncmin) / (ncmax-ncmin)) / 10 + "%");
+    slider.set("title",value);
+    rails.set("value",value);
+    if (rails.onchange) { rails.onchange({value: value}); }
+    // cache new position
+    prevx = x;
   };
 
   // input type="range" --> custom slider replacement
@@ -110,21 +148,6 @@
       }
     });
 
-    // touch handling
-    rails.listen("touchmove", function(evt) {
-      if (evt.targetTouches.length == 1) {
-        var touch = event.targetTouches[0];
-        rails.set("sdown", true);
-        evt.clientX = touch.pageX;
-        reposition(rails, slider, evt);
-      }
-      return false;
-    });
-    rails.listen("touchend", function(evt) {
-      rails.set("sdown", false);
-      return false;
-    });
-
     // but when the mouse is down, response is
     // handled by the document.
     document.listen("mousemove", function(evt) {
@@ -136,6 +159,10 @@
     document.listen("mouseup", function(evt) {
       rails.set("sdown", false);
     });
+
+    rails.listen("touchstart", touchHandler, true);
+    rails.listen("touchmove", touchHandler, true);
+    document.listen("touchend", touchHandler, true);
 
     // make sure the slider starts at the correct position
     // before returning the substitution element.
