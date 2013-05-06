@@ -12,37 +12,6 @@
 **/
 (function(window) {
 
-  // code from http://stackoverflow.com/questions/1517924
-  // "javascript-mapping-touch-events-to-mouse-events#1781750"
-  function touchHandler(event) {
-    var touches = event.changedTouches,
-        first = touches[0],
-        type = "";
-    switch(event.type) {
-      case "touchstart": type = "mousedown"; break;
-      case "touchmove":  type="mousemove"; break;
-      case "touchend":   type="mouseup"; break;
-      default: return; }
-
-    // initMouseEvent(type, canBubble, cancelable, view, clickCount,
-    //                screenX, screenY, clientX, clientY, ctrlKey,
-    //                altKey, shiftKey, metaKey, button, relatedTarget);
-    var simulatedEvent = document.createEvent("MouseEvent");
-    simulatedEvent.initMouseEvent(type, true, true, window, 1,
-                              first.screenX, first.screenY,
-                              first.clientX, first.clientY, false,
-                              false, false, false, 0/*left*/, null);
-    first.target.dispatchEvent(simulatedEvent);
-    event.preventDefault();
-  }
-
-  function wrapTouchToMouse(element) {
-    element.listen("touchstart", touchHandler, true);
-    element.listen("touchmove", touchHandler, true);
-    element.listen("touchend", touchHandler, true);
-    element.listen("touchcancel", touchHandler, true);
-  }
-
   // is toolkit loaded?
   if(!window["Toolkit"]) return;
 
@@ -159,10 +128,6 @@
     document.listen("mouseup", function(evt) {
       rails.set("sdown", false);
     });
-
-    rails.listen("touchstart", touchHandler, true);
-    rails.listen("touchmove", touchHandler, true);
-    document.listen("touchend", touchHandler, true);
 
     // make sure the slider starts at the correct position
     // before returning the substitution element.
