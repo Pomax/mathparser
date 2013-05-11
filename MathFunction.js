@@ -567,8 +567,8 @@ Tape.prototype = {
   /**
    * Generate the String representation of this tape.
    */
-  toString: function() {
-    var s = join(this.data, '');
+  toString: function() { 
+    var s = join(this.data, ''); 
     s = s.substring(0,this.position)+" "+this.data[this.position]+" "+s.substring(this.position+1);
     return s;
   }
