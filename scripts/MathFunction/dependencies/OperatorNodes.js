@@ -3,7 +3,7 @@ var OperatorNode  = function(op, str){
   this.strength = str;
 };
 OperatorNode.prototype = new FunctionTree();
-OperatorNode.prototype.getStrength = function() { return this.strength; }
+OperatorNode.prototype.getStrength = function() { return this.strength; };
 OperatorNode.prototype.toString = function() {
   var left = this.left, right = this.right;
   return (left ? left.toString() : "") + this.operator + (right ? right.toString() : "");
@@ -52,7 +52,7 @@ DivisionNode.prototype.toLaTeX = function() {
 var NegativeNode = function(){};
 NegativeNode.prototype = new OperatorNode("-", 3);
 NegativeNode.prototype.hasLeft = function() { return false; };
-NegativeNode.prototype.hasLeaves = function() { return this.right!=false; };
+NegativeNode.prototype.hasLeaves = function() { return this.right!==false; };
 NegativeNode.prototype.setLeaves = function(l, r) { this.right = r; };
 NegativeNode.prototype.evaluate = function(var_names, values) {
   return - this.right.evaluate(var_names, values);
@@ -71,7 +71,7 @@ PowerNode.prototype.evaluate = function(var_names, values) {
 var FactorialNode = function(){};
 FactorialNode.prototype = new OperatorNode("!", 5);
 FactorialNode.prototype.hasLeft = function() { return false; };
-FactorialNode.prototype.hasLeaves = function() { return this.left!=false; };
+FactorialNode.prototype.hasLeaves = function() { return this.left!==false; };
 FactorialNode.prototype.setLeaves = function(l, r) { this.left = l; };
 FactorialNode.prototype.factorial = function(n) {
   // TODO: add in LUT-speedup

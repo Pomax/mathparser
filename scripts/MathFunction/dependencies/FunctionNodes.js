@@ -1,4 +1,4 @@
-var FunctionNode = function(label) { this.label = label };
+var FunctionNode = function(label) { this.label = label; };
 FunctionNode.prototype = new FunctionTree();
 FunctionNode.prototype.setContent = function(content) {
   this.setLeaves(false,content);
@@ -94,14 +94,14 @@ FunctionNode_sqrt.prototype = new FunctionNode("sqrt");
 FunctionNode_sqrt.prototype.evaluate = function(var_names, values) {
   return Math.sqrt(this.content.evaluate(var_names, values));
 };
-FunctionNode_sqrt.prototype.toLaTeX = function() { return "\\sqrt{" + this.content.toLaTeX() + "}"; }
+FunctionNode_sqrt.prototype.toLaTeX = function() { return "\\sqrt{" + this.content.toLaTeX() + "}"; };
 
 var FunctionNode_abs = function(content) { this.setContent(content); };
 FunctionNode_abs.prototype = new FunctionNode("abs");
 FunctionNode_abs.prototype.evaluate = function(var_names, values) {
   return Math.abs(this.content.evaluate(var_names, values));
 };
-FunctionNode_abs.prototype.toLaTeX = function() { return "|" + this.content.toLaTeX() + "|"; }
+FunctionNode_abs.prototype.toLaTeX = function() { return "|" + this.content.toLaTeX() + "|"; };
 
 
 // builder function

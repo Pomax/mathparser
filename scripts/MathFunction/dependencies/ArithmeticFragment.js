@@ -54,12 +54,12 @@ ArithmeticFragment.prototype = {
         groupCount = 0,
         last, i;
     for(i=0, last=tokens.length; i<last; i++) {
-      if(tokens[i] == "") continue;
-      if(tokens[i] == "(") groupCount++;
-      if(tokens[i] == ")") groupCount--;
-      if(groupCount==0 && i<last-1) return false;
+      if(tokens[i] === "") continue;
+      if(tokens[i] === "(") groupCount++;
+      if(tokens[i] === ")") groupCount--;
+      if(groupCount===0 && i<last-1) return false;
     }
-    return groupCount==0;
+    return groupCount===0;
   },
   // does a char represent a mathematical operator?
   isArithmeticOperator: function(t) {
@@ -67,7 +67,7 @@ ArithmeticFragment.prototype = {
   },
   /**
    * Expand this fragment, if possible
-   */  
+   */
   expand: function() {
     if(this.expanded) return;
     var compound = false,
@@ -87,10 +87,10 @@ ArithmeticFragment.prototype = {
       this.fragment = this.fragment.substring(1,this.fragment.length-1);
     }
     // is this a summation?
-    if(isAggregateNode(this.functor) && this.fragment.trim()!="") {
+    if(isAggregateNode(this.functor) && this.fragment.trim()!=="") {
       var pos = this.fragment.indexOf(","),
           capPos = this.fragment.indexOf("(");
-      if(capPos==-1) { capPos = this.fragment.length(); }
+      if(capPos===-1) { capPos = this.fragment.length(); }
       var arg = "";
       while(pos>-1 && pos<capPos) {
         arg = this.fragment.substring(0,pos);
@@ -109,31 +109,31 @@ ArithmeticFragment.prototype = {
 
     while(tape.more()) {
       token = tape.next();
-      
+
       // If we encounter an arithmetic operator, split up the fragment
       if(this.isArithmeticOperator(token)) {
         compound = true;
-        if (buffer.trim() != "" || just_inserted) {
+        if (buffer.trim() !== "" || just_inserted) {
           // content
-          if(buffer.trim() != "") {
+          if(buffer.trim() !== "") {
             this.fragment = "";
             this.children.push(new ArithmeticFragment(buffer)); }
           // operator
           if(token == "!") { this.children.push(new UnaryOperator(token)); }
           else { this.children.push(new Operator(token)); }
           buffer = "";
-        } else if(token == "-") {
+        } else if(token === "-") {
           this.children.push(new UnaryOperator("-"));
         }
         just_inserted = true;
       }
       // If we encounter a grouping token,
       // skip over the group content.
-      else if (token == "(") {
+      else if (token === "(") {
         buffer += tape.skipGroup("(",")");
       }
       // Otherwise, move token to buffer
-      else { 
+      else {
         just_inserted = false;
         buffer += token;
       }
@@ -141,8 +141,8 @@ ArithmeticFragment.prototype = {
 
     // If we have a non-empty buffer after expanding
     // we need to create a "final" fragment.
-    if ((compound || unwrapped) && buffer!="") {
-      this.children.push(new ArithmeticFragment(buffer)); 
+    if ((compound || unwrapped) && buffer!=="") {
+      this.children.push(new ArithmeticFragment(buffer));
       compound = true;
     }
 
@@ -166,13 +166,15 @@ ArithmeticFragment.prototype = {
     if(!this.expanded) { this.expand(); }
 
     if(this.children.length>0) {
+      var i,
+          last = this.children.length;
       // bottom-up conversion
-      for(var i=0, last=this.children.length; i<last; i++) {
+      for(i=0; i<last; i++) {
         var af = this.children[i];
-        if(af instanceof UnaryOperator) { 
+        if(af instanceof UnaryOperator) {
           nodes.push(getUnaryOperatorNode(af.operator));
         }
-        else if(af instanceof Operator) { 
+        else if(af instanceof Operator) {
           nodes.push(getOperatorNode(af.operator));
         }
         else { nodes.push(af.formFunctionTree()); }
@@ -182,7 +184,7 @@ ArithmeticFragment.prototype = {
       var rhs = false, lhs = false,
           tn, right, left;
       for(var s=6; s>=0; s--) {
-        for(var i=nodes.length-1; i>=0; i--) {
+        for(i=nodes.length-1; i>=0; i--) {
           tn = nodes[i];
           if(tn.getStrength) {
             if(tn.getStrength()==s) {
@@ -213,7 +215,7 @@ ArithmeticFragment.prototype = {
       var aggregator = getAggregateNode(this.functor, this.sumarguments, finalNode);
       finalNode = (aggregator ? aggregator : getFunctionNode(this.functor, finalNode));
     }
-  
+
     // do we need to wrap?
     if(this.wrapped) { finalNode = new WrapperNode(finalNode); }
 
@@ -221,7 +223,7 @@ ArithmeticFragment.prototype = {
   },
   /**
    * toString - always useful
-   */  
+   */
   toString: function(pad) {
     if(!pad) return this.toString(" ");
     var s = "["+this.uid+"] ";
@@ -242,7 +244,7 @@ ArithmeticFragment.prototype = {
 // operators are either +, -, *, / or ^ -- no op is represented as a space
 var Operator = function(op) { this.setup(""); this.operator = op; };
 Operator.prototype = new ArithmeticFragment("");
-Operator.prototype.toString = function(pad) { return ''+this.operator; }
+Operator.prototype.toString = function(pad) { return ''+this.operator; };
 
 // special operator class
 var UnaryOperator = function(op) { this.setup(""); this.operator = op; };

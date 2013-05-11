@@ -4,8 +4,8 @@ FunctionTree.prototype = {
   left: false,
   right: false,
   // check for right/left children
-  hasRight: function() { return this.right!=false; },
-  hasLeft: function() { return this.left!=false; },
+  hasRight: function() { return this.right!==false; },
+  hasLeft: function() { return this.left!==false; },
   // set the child nodes.
   setLeaves: function(l, r) { this.left = l; this.right = r; },
   // check whether this tree has its leaved instantiated.
@@ -16,11 +16,7 @@ FunctionTree.prototype = {
    * in the [var_names] array with the corresponding
    * values in the [values] array.
    */
-  evaluate: function(var_names, values) {},
-  /**
-   * for numbers/constants (if no args) and variables (if arg)
-   */
-  evaluate: function(v) { return false; },
+  evaluate: function(var_names, values) { return false; },
   /**
    * Returns the list of free parameters used in this function
    */

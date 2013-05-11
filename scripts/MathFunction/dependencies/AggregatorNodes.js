@@ -1,7 +1,7 @@
 /**
  * Very special function node.
  */
-var AggregateNode = function(label) { this.label = label; }
+var AggregateNode = function(label) { this.label = label; };
 AggregateNode.prototype = new FunctionNode();
 AggregateNode.prototype.getParameters = function() { return this.content.getParameters(); };
 AggregateNode.prototype.bindAll = function(parameters, content, startValue) {
@@ -42,10 +42,10 @@ FunctionNode_sum.prototype.computeAggregate = function(start, end, pos, var_name
     value += this.content.evaluate(var_names, values);
   }
   return value;
-}
+};
 FunctionNode_sum.prototype.toLaTeX = function() {
   var params = this.parameters;
-  return "\\sum_{n="+params[0].toLaTeX()+"}^{"+params[1].toLaTeX()+"} " + this.content.toLaTeX(); 
+  return "\\sum_{n="+params[0].toLaTeX()+"}^{"+params[1].toLaTeX()+"} " + this.content.toLaTeX();
 };
 
 /**
@@ -65,10 +65,10 @@ FunctionNode_prod.prototype.computeAggregate = function(start, end, pos, var_nam
     value *= this.content.evaluate(var_names, values);
   }
   return value;
-}
+};
 FunctionNode_prod.prototype.toLaTeX = function() {
   var params = this.parameters;
-  return "\\prod_{n="+params[0].toLaTeX()+"}^{"+params[1].toLaTeX()+"} " + this.content.toLaTeX(); 
+  return "\\prod_{n="+params[0].toLaTeX()+"}^{"+params[1].toLaTeX()+"} " + this.content.toLaTeX();
 };
 
 
@@ -94,7 +94,7 @@ FunctionNode_area.prototype.computeAggregate = function (s, e, pos, var_names, v
       area = this.startValue,
       slice,
       v;
-  
+
   for(pos=0; pos<var_names.length; pos++) {
     if(var_names[pos] == varName) break;
   }
@@ -118,10 +118,10 @@ var isAggregateNode = function(functor) {
   if (functor == "sum") return true;
   if (functor == "prod") return true;
   if (functor == "area") return true;
-  return false; }
+  return false; };
 
-var getAggregateNode = function(functor, arguments, content) {
-  if (functor == "sum") return new FunctionNode_sum(arguments, content);
-  if (functor == "prod") return new FunctionNode_prod(arguments, content);
-  if (functor == "area") return new FunctionNode_area(arguments, content);
-  return false; }
+var getAggregateNode = function(functor, args, content) {
+  if (functor == "sum") return new FunctionNode_sum(args, content);
+  if (functor == "prod") return new FunctionNode_prod(args, content);
+  if (functor == "area") return new FunctionNode_area(args, content);
+  return false; };

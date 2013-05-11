@@ -16,7 +16,7 @@ SimpleNode.prototype = new FunctionTree();
 SimpleNode.prototype.evaluate = function() {
   if(arguments.length==1) return this.evaluate$1(arguments[0]);
   if(arguments.length==2) return this.evaluate$2(arguments[0], arguments[1]);
-  return false; }
+  return false; };
 SimpleNode.prototype.evaluate$1 = function(v) { return v; };
 SimpleNode.prototype.evaluate$2 = function(var_names, values) {
   for(var i=0, last=var_names.length; i<last; i++) {
