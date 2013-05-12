@@ -145,7 +145,9 @@
           setupTabs();
           var activeSections = document.querySelectorAll('section[class=tabbed]');
           activeSections.forEach(function(s) {
-            s.onreveal = function() { setTimeout(style, 50); }
+            s.onreveal = function() { setTimeout(function(){
+              update();
+            }, 50); }
           })
           // show initial function
           update();
