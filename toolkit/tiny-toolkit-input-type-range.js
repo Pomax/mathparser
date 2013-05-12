@@ -21,7 +21,7 @@
     var originalSet= $.set;
     $.set = function(name, value) {
       // only intercept type=range
-      if (name !== "type" || value !== "range") {
+      if (!name || name !== "type" || !value || value !== "range") {
         return originalSet.apply(this, name, value);
       }
       // perform substitution
@@ -31,39 +31,32 @@
     }
   }(HTMLInputElement.prototype));
 
-  // cached value for the slider position during reposition()/3
-  var prevx = -1;
-
   /**
    * universal slider repositioning
    */
-  function reposition(rails, slider, evt) {
+  function reposition(rails, slider, options) {
     if (rails.get("disabled") === "disabled") return;
-    var x = evt.clientX,
+    var x = options.screenX,
         rpos = rails.position(),
         min = rpos.left,
         max = rpos.right - slider.position().width,
         oldval = parseFloat(rails.get("value"));
-    // correct if necessary
-    if(x<min) x = min;
-    if(x>max) x = max;
-    x -= min;
-    // stop if the position won't change
-    if(x===prevx) return;
-    // reposition slider head
-    var ncmin = parseFloat(rails.get("min")),
-        ncmax = parseFloat(rails.get("max")),
-        step = parseFloat(rails.get("step")),
-        ratio = x / (max - min),
-        value = ncmin + step*(Math.round(ratio * (ncmax - ncmin) / step));
-    if (value > ncmax || value === oldval) return;
-    oldval = value;
-    slider.css("left", parseInt(1000 * (value - ncmin) / (ncmax-ncmin)) / 10 + "%");
-    slider.set("title",value);
-    rails.set("value",value);
-    if (rails.onchange) { rails.onchange({value: value}); }
-    // cache new position
-    prevx = x;
+    if (min <= x && x <= max) {
+      x -= min;
+      var ncmin = parseFloat(rails.get("min")),
+          ncmax = parseFloat(rails.get("max")),
+          step = parseFloat(rails.get("step")),
+          ratio = x / (max - min),
+          value = ncmin + step*(Math.round(ratio * (ncmax - ncmin) / step));
+      if (value > ncmax || value === oldval) return;
+      oldval = value;
+      slider.css("left", parseInt(1000 * (value - ncmin) / (ncmax-ncmin)) / 10 + "%");
+      slider.set("title",value);
+      rails.set("value",value);
+      if (rails.onchange) {
+        rails.onchange({value: value});
+      }
+    };
   };
 
   // input type="range" --> custom slider replacement
@@ -109,25 +102,59 @@
     rails.onmousedown    = function () { return false; };
 
     // reposition is actually handled by the rails
-    rails.listen("mousedown", function(evt){
-      if (evt.which === 1 || evt.button === 1) {
-        rails.set("sdown", true);
-        reposition(rails, slider, evt);
-        return false;
-      }
+    var touchlock = false,
+        lastTouch = -1,
+        engageRails = function(evt){
+          if (evt.which === 1 || evt.button === 1) {
+            rails.set("sdown", true);
+            reposition(rails, slider, {screenX: evt.screenX});
+            return false;
+          }
+        };
+
+    rails.listen("mousedown", function(evt) {
+      if (touchlock) return;
+      return engageRails(evt);
     });
 
-    // but when the mouse is down, response is
-    // handled by the document.
+    rails.listen("touchstart", function(evt) {
+      touchlock = true;
+      evt.which = evt.button = 1;
+      evt.screenX = evt.touches.item(0).screenX;
+      return engageRails(evt);
+    }),
+
+    // but when the mouse is down, response is handled by the document.
     document.listen("mousemove", function(evt) {
+      if (touchlock) return;
       if (rails.get("sdown") === "true") {
         reposition(rails, slider, evt);
       }
     });
 
+    document.listen("touchmove", function(evt) {
+      var now = (new Date()).getTime();
+      if (touchlock && lastTouch===-1 && rails.get("sdown") === "true") {
+        evt.screenX = evt.touches.item(0).screenX;
+        reposition(rails, slider, evt);
+        lastTouch = now;
+      } else {
+        if(now-lastTouch>100) {
+          lastTouch = -1;
+        }
+      }
+    })
+
     document.listen("mouseup", function(evt) {
+      if (touchlock) return;
       rails.set("sdown", false);
     });
+
+    document.listen("touchend", function(evt) {
+      rails.set("sdown", false);
+      touchlock = false;
+      lastTouch = -1;
+    })
 
     // make sure the slider starts at the correct position
     // before returning the substitution element.
@@ -141,15 +168,15 @@
     // enable/disable is always useful
     rails.disable = function() {
       rails.set("disabled","disabled");
-      rails.classes().add("hidden");
-      slider.classes().add("hidden");
-    };
-    rails.enable = function() {
-      rails.set("disabled","");
-      rails.classes().remove("hidden");
-      slider.classes().remove("hidden");
+      rails.show(false);
+      slider.show(false);
     };
 
+    rails.enable = function() {
+      rails.set("disabled",false);
+      rails.show(true);
+      slider.show(true);
+    };
     return rails;
   }
 

@@ -29,6 +29,7 @@ ArithmeticFragment.prototype = {
     // tells us whether we're already expanded
     this.expanded = false;
   },
+
   /**
    * balanced parentheses?
    */
@@ -41,12 +42,14 @@ ArithmeticFragment.prototype = {
       if(toks[i] == ")") pCount--; }
     return pCount;
   },
+
   // functor(...) fragment?
   isFunctionWrapped: function(fragment) {
     if(!fragment.match(/^\w+\(.+\)/)) return false;
     fragment = fragment.replace(/^\w+/g,'');
     return this.isParensWrapped(fragment);
   },
+
   // (...) fragment?
   isParensWrapped: function(fragment) {
     if(!fragment.match(/^\(.*\)$/)) return false;
@@ -61,10 +64,12 @@ ArithmeticFragment.prototype = {
     }
     return groupCount===0;
   },
+
   // does a char represent a mathematical operator?
   isArithmeticOperator: function(t) {
     return t=="+" || t=="-" || t=="*" || t=="/" || t=="^" || t=="!";
   },
+
   /**
    * Expand this fragment, if possible
    */
@@ -156,6 +161,7 @@ ArithmeticFragment.prototype = {
 
     this.expanded = true;
   },
+
   /**
    * form the function tree that maps to this fragment
    */
@@ -221,6 +227,7 @@ ArithmeticFragment.prototype = {
 
     return finalNode;
   },
+
   /**
    * toString - always useful
    */

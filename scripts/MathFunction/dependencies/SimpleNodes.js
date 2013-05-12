@@ -1,3 +1,6 @@
+/**
+ *
+ */
 var NumberNode = function(value) { this.value = parseFloat(value); };
 NumberNode.prototype = new FunctionTree();
 NumberNode.prototype.nf = function(val) {
@@ -11,6 +14,10 @@ NumberNode.prototype.toLaTeX = function() { return "{" + this.nf(this.value) + "
 NumberNode.prototype.getParameters = function() { return []; };
 NumberNode.prototype.derive = function(varname) { return this; };
 
+
+/**
+ *
+ */
 var SimpleNode = function(label) { this.label = label; };
 SimpleNode.prototype = new FunctionTree();
 SimpleNode.prototype.evaluate = function() {
@@ -27,15 +34,25 @@ SimpleNode.prototype.getParameters = function() { return [this.label]; };
 SimpleNode.prototype.toString = function() { return /*"var:"+*/ this.label; };
 SimpleNode.prototype.toLaTeX = function() { return this.label; };
 
+
+/**
+ *
+ */
 var ConstantNode = function(label, value) { this.label = label; this.value = value; };
 ConstantNode.prototype = new NumberNode();
 
 
+/**
+ *
+ */
 var ConstantNode_pi = function() {};
 ConstantNode_pi.prototype = new ConstantNode("π", Math.PI);
 ConstantNode_pi.prototype.toLaTeX = function() { return "π"; };
 
 
+/**
+ *
+ */
 var ConstantNode_e = function() {};
 ConstantNode_e.prototype = new ConstantNode("e", Math.E);
 ConstantNode_e.prototype.toLaTeX = function() { return "e"; };
@@ -48,4 +65,5 @@ var getSimpleNode = function(term) {
   if(term == "pi") return new ConstantNode_pi();
   if(term == "e") return new ConstantNode_e();
   if(isNumber(term)) return new NumberNode(term);
-  return new SimpleNode(term); };
+  return new SimpleNode(term);
+};

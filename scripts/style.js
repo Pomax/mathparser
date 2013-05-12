@@ -25,6 +25,7 @@ var style = (function() {
     if(curFn!=fn) {
       // bind math function
       curFn = fn;
+      updated = true;
       if(fn.indexOf(',')!==-1) {
         args = fn.split(',');
         mathFunction = new MathFunction.Compound(args);
@@ -54,10 +55,10 @@ var style = (function() {
         clamps.add(range);
         clamps.add(create("span",{"class":"label"+clamp+"label"},clamp));
       });
-    } else { mathFunction = curMF; }
+    } else { updated = false; mathFunction = curMF; }
 
     // show formula on the page
-    mathFunction.render(p);
+    if(updated) { mathFunction.render(p); }
 
     // get the variable plotting values
     var start = parseFloat(section.find('div[type=range].start').get("value")),
