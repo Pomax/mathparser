@@ -23,23 +23,40 @@ Tape.prototype = {
   /**
    * read the current character on the tape.
    */
-  read: function() { return this.data[this.position]; },
+  read: function() {
+    return this.data[this.position];
+  },
+
   /**
    * checks whether there are more characters that can be read.
    */
-  more: function() { return this.position<this.length; },
+  more: function() {
+    return this.position<this.length;
+  },
+
   /**
    * advance the tape by one spot
    */
-  advance: function() { if(this.position<this.length-1) this.position++; },
+  advance: function() {
+    if(this.position<this.length-1) {
+      this.position++;
+    }
+  },
+
   /**
    * read the next unread character on the tape.
    */
-  next: function() { return this.data[this.position++]; },
+  next: function() {
+    return this.data[this.position++];
+  },
+
   /**
    * look at the next character without forwarding the read head.
    */
-  peek: function() { return this.data[this.position+1]; },
+  peek: function() {
+    return this.data[this.position+1];
+  },
+
   /**
    * Recursively skip over a grouped expression.
    * This is important for skipping over bracketed
@@ -53,17 +70,21 @@ Tape.prototype = {
       if(_tmp == opener) {
         buffer += this.skipGroup(opener, closer);
       }
-      else if(_tmp == closer) { break; }
-      else { buffer += _tmp; }
+      else if(_tmp == closer) {
+        break;
+      }
+      else {
+        buffer += _tmp;
+      }
     }
     return opener + buffer + closer;
   },
   /**
    * Generate the String representation of this tape.
    */
-  toString: function() { 
-    var s = join(this.data, ''); 
-    s = s.substring(0,this.position)+" "+this.data[this.position]+" "+s.substring(this.position+1);
+  toString: function() {
+    var s = join(this.data, '');
+    s = s.substring(0,this.position) + " " + this.data[this.position] + " " + s.substring(this.position+1);
     return s;
   }
 };

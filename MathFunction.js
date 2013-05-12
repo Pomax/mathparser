@@ -17,20 +17,37 @@ var FunctionTree = function() {};
 FunctionTree.prototype = {
   left: false,
   right: false,
+
   // check for right/left children
-  hasRight: function() { return this.right!==false; },
-  hasLeft: function() { return this.left!==false; },
+  hasRight: function() {
+    return this.right!==false;
+  },
+
+  hasLeft: function() {
+    return this.left!==false;
+  },
+
   // set the child nodes.
-  setLeaves: function(l, r) { this.left = l; this.right = r; },
+  setLeaves: function(l, r) {
+    this.left = l;
+    this.right = r;
+  },
+
   // check whether this tree has its leaved instantiated.
-  hasLeaves: function() { return (this.left && this.right); },
+  hasLeaves: function() {
+    return (this.left && this.right);
+  },
+
   /**
    * Evaluate the mathematical expression modelled
    * by this tree, by substituting all variables
    * in the [var_names] array with the corresponding
    * values in the [values] array.
    */
-  evaluate: function(var_names, values) { return false; },
+  evaluate: function(var_names, values) {
+    return false;
+  },
+
   /**
    * Returns the list of free parameters used in this function
    */
@@ -40,16 +57,20 @@ FunctionTree.prototype = {
     this.addParametersFromChild(free, this.right);
     return free;
   },
+
   // helper method
   addParametersFromChild: function(list, child) {
     if(child) {
       var free = child.getParameters();
       free.forEach(function(s){
-        if(list.indexOf(s)>-1) return;
+        if(list.indexOf(s)>-1) {
+          return;
+        }
         list.push(s);
       });
     }
   },
+
   /**
    * generate plot data.
    * clamps: [{label:<str>,value:<num>},...]
@@ -70,13 +91,18 @@ FunctionTree.prototype = {
     }
     return data;
   },
+
   /**
    * replace a variable with name [varname] with [replacement]
    */
   replace: function(varname, replacement) {
     var left = this.left, right = this.right;
-    if(left && left instanceof SimpleNode && left.label===varname) { this.left = replacement; }
-    if(right && right instanceof SimpleNode && right.label===varname) { this.right = replacement; }
+    if(left && left instanceof SimpleNode && left.label===varname) {
+      this.left = replacement;
+    }
+    if(right && right instanceof SimpleNode && right.label===varname) {
+      this.right = replacement;
+    }
   }
 };
 
@@ -84,6 +110,9 @@ FunctionTree.prototype = {
  * scripts/MathFunction/dependencies/SimpleNodes.js
  */
 
+/**
+ *
+ */
 var NumberNode = function(value) { this.value = parseFloat(value); };
 NumberNode.prototype = new FunctionTree();
 NumberNode.prototype.nf = function(val) {
@@ -97,6 +126,10 @@ NumberNode.prototype.toLaTeX = function() { return "{" + this.nf(this.value) + "
 NumberNode.prototype.getParameters = function() { return []; };
 NumberNode.prototype.derive = function(varname) { return this; };
 
+
+/**
+ *
+ */
 var SimpleNode = function(label) { this.label = label; };
 SimpleNode.prototype = new FunctionTree();
 SimpleNode.prototype.evaluate = function() {
@@ -113,15 +146,25 @@ SimpleNode.prototype.getParameters = function() { return [this.label]; };
 SimpleNode.prototype.toString = function() { return /*"var:"+*/ this.label; };
 SimpleNode.prototype.toLaTeX = function() { return this.label; };
 
+
+/**
+ *
+ */
 var ConstantNode = function(label, value) { this.label = label; this.value = value; };
 ConstantNode.prototype = new NumberNode();
 
 
+/**
+ *
+ */
 var ConstantNode_pi = function() {};
 ConstantNode_pi.prototype = new ConstantNode("π", Math.PI);
 ConstantNode_pi.prototype.toLaTeX = function() { return "π"; };
 
 
+/**
+ *
+ */
 var ConstantNode_e = function() {};
 ConstantNode_e.prototype = new ConstantNode("e", Math.E);
 ConstantNode_e.prototype.toLaTeX = function() { return "e"; };
@@ -134,12 +177,16 @@ var getSimpleNode = function(term) {
   if(term == "pi") return new ConstantNode_pi();
   if(term == "e") return new ConstantNode_e();
   if(isNumber(term)) return new NumberNode(term);
-  return new SimpleNode(term); };
+  return new SimpleNode(term);
+};
 
 /**
  * scripts/MathFunction/dependencies/OperatorNodes.js
  */
 
+/**
+ * Operator prototype
+ */
 var OperatorNode  = function(op, str){
   this.operator = op;
   this.strength = str;
@@ -154,21 +201,39 @@ OperatorNode.prototype.toLaTeX = function() {
   return this.left.toLaTeX() + this.operator + this.right.toLaTeX();
 };
 
+/**
+ * Operator type lookup
+ */
+var operatorNodes = {},
+    unaryOperatorNodes = {};
 
+/**
+ * ...
+ */
 var AdditionNode = function(){};
 AdditionNode.prototype = new OperatorNode("+", 1);
 AdditionNode.prototype.evaluate = function(var_names, values) {
   var left = this.left, right = this.right;
   return left.evaluate(var_names, values) + right.evaluate(var_names, values);
 };
+operatorNodes["+"] = AdditionNode;
 
+
+/**
+ * ...
+ */
 var SubtractionNode = function(){};
 SubtractionNode.prototype = new OperatorNode("-", 1);
 SubtractionNode.prototype.evaluate = function(var_names, values) {
   var left = this.left, right = this.right;
   return left.evaluate(var_names, values) - right.evaluate(var_names, values);
 };
+operatorNodes["-"] = SubtractionNode;
 
+
+/**
+ * ...
+ */
 var MultiplicationNode = function(){};
 MultiplicationNode.prototype = new OperatorNode("*", 2);
 MultiplicationNode.prototype.evaluate = function(var_names, values) {
@@ -178,8 +243,12 @@ MultiplicationNode.prototype.evaluate = function(var_names, values) {
 MultiplicationNode.prototype.toLaTeX = function() {
   return this.left.toLaTeX() + " \\cdot " + this.right.toLaTeX();
 };
+operatorNodes["*"] = MultiplicationNode;
 
 
+/**
+ * ...
+ */
 var DivisionNode = function(){};
 DivisionNode.prototype = new OperatorNode("/", 2);
 DivisionNode.prototype.evaluate = function(var_names, values) {
@@ -189,8 +258,33 @@ DivisionNode.prototype.evaluate = function(var_names, values) {
 DivisionNode.prototype.toLaTeX = function() {
   return "\\frac{" + this.left.toLaTeX() + "}{" + this.right.toLaTeX() + "}";
 };
+operatorNodes["/"] = DivisionNode;
 
 
+/**
+ * ...
+ */
+var PowerNode = function(){};
+PowerNode.prototype = new OperatorNode("^", 4);
+PowerNode.prototype.evaluate = function(var_names, values) {
+  var left = this.left, right = this.right;
+  return Math.pow(left.evaluate(var_names, values), right.evaluate(var_names, values));
+};
+operatorNodes["^"] = PowerNode;
+
+
+// builder function
+var getOperatorNode = function(op) {
+  if(operatorNodes[op]) {
+    return new operatorNodes[op]();
+  }
+  return false;
+};
+
+
+/**
+ * ...
+ */
 var NegativeNode = function(){};
 NegativeNode.prototype = new OperatorNode("-", 3);
 NegativeNode.prototype.hasLeft = function() { return false; };
@@ -200,16 +294,12 @@ NegativeNode.prototype.evaluate = function(var_names, values) {
   return - this.right.evaluate(var_names, values);
 };
 NegativeNode.prototype.toLaTeX = function() { return "-" + this.right.toLaTeX(); };
+unaryOperatorNodes["-"] = NegativeNode;
 
 
-var PowerNode = function(){};
-PowerNode.prototype = new OperatorNode("^", 4);
-PowerNode.prototype.evaluate = function(var_names, values) {
-  var left = this.left, right = this.right;
-  return Math.pow(left.evaluate(var_names, values), right.evaluate(var_names, values));
-};
-
-
+/**
+ * ...
+ */
 var FactorialNode = function(){};
 FactorialNode.prototype = new OperatorNode("!", 5);
 FactorialNode.prototype.hasLeft = function() { return false; };
@@ -225,25 +315,24 @@ FactorialNode.prototype.evaluate = function(var_names, values) {
   return this.factorial(v);
 };
 FactorialNode.prototype.toLaTeX = function() { return this.left.toLaTeX()+"!"; };
+unaryOperatorNodes["!"] = FactorialNode;
 
 
-// builder functions
-var getOperatorNode = function(op) {
-  if(op == "+") return new AdditionNode();
-  if(op == "-") return new SubtractionNode();
-  if(op == "*") return new MultiplicationNode();
-  if(op == "/") return new DivisionNode();
-  if(op == "^") return new PowerNode();
-  return false; };
+// builder function
 var getUnaryOperatorNode = function(op) {
-  if(op == "-") return new NegativeNode();
-  if(op == "!") return new FactorialNode();
-  return false; };
+  if(unaryOperatorNodes[op]) {
+    return new unaryOperatorNodes[op]();
+  }
+  return false;
+};
 
 /**
  * scripts/MathFunction/dependencies/FunctionNodes.js
  */
 
+/**
+ *
+ */
 var FunctionNode = function(label) { this.label = label; };
 FunctionNode.prototype = new FunctionTree();
 FunctionNode.prototype.setContent = function(content) {
@@ -259,6 +348,10 @@ FunctionNode.prototype.replace = function(varname, replacement) {
 FunctionNode.prototype.toString = function() { return /*"f:" +*/ this.label + "(" + this.content.toString() + ")"; };
 FunctionNode.prototype.toLaTeX= function() { return this.label + "\\left ( " + this.content.toLaTeX() + " \\right ) "; };
 
+
+/**
+ *
+ */
 var WrapperNode = function(content) { this.setContent(content); };
 WrapperNode.prototype = new FunctionNode("wrapper");
 WrapperNode.prototype.toString = function() { return "(" + this.content.toString() + ")"; };
@@ -267,104 +360,165 @@ WrapperNode.prototype.evaluate = function(var_names, values) {
   return this.content.evaluate(var_names, values);
 };
 
+
+/**
+ *
+ */
+var functionNodes = {};
+
+
+/**
+ *
+ */
 var FunctionNode_sin = function(content) { this.setContent(content); };
 FunctionNode_sin.prototype = new FunctionNode("sin");
 FunctionNode_sin.prototype.evaluate = function(var_names, values) {
   return Math.sin(this.content.evaluate(var_names, values));
 };
+functionNodes.sin = FunctionNode_sin;
 
+
+/**
+ *
+ */
 var FunctionNode_cos = function(content) { this.setContent(content); };
 FunctionNode_cos.prototype = new FunctionNode("cos");
 FunctionNode_cos.prototype.evaluate = function(var_names, values) {
   return Math.cos(this.content.evaluate(var_names, values));
 };
+functionNodes.cos = FunctionNode_cos;
 
+
+/**
+ *
+ */
 var FunctionNode_tan = function(content) { this.setContent(content); };
 FunctionNode_tan.prototype = new FunctionNode("tan");
 FunctionNode_tan.prototype.evaluate = function(var_names, values) {
   return Math.tan(this.content.evaluate(var_names, values));
 };
+functionNodes.tan = FunctionNode_tan;
 
+
+/**
+ *
+ */
 var FunctionNode_asin = function(content) { this.setContent(content); };
 FunctionNode_asin.prototype = new FunctionNode("asin");
 FunctionNode_asin.prototype.evaluate = function(var_names, values) {
   return Math.asin(this.content.evaluate(var_names, values));
 };
+functionNodes.asin = FunctionNode_asin;
 
+
+/**
+ *
+ */
 var FunctionNode_acos = function(content) { this.setContent(content); };
 FunctionNode_acos.prototype = new FunctionNode("acos");
 FunctionNode_acos.prototype.evaluate = function(var_names, values) {
   return Math.acos(this.content.evaluate(var_names, values));
 };
+functionNodes.acos = FunctionNode_acos;
 
+
+/**
+ *
+ */
 var FunctionNode_atan = function(content) { this.setContent(content); };
 FunctionNode_atan.prototype = new FunctionNode("atan");
 FunctionNode_atan.prototype.evaluate = function(var_names, values) {
   return Math.atan(this.content.evaluate(var_names, values));
 };
+functionNodes.atan = FunctionNode_atan;
 
+
+/**
+ *
+ */
 var FunctionNode_sinh = function(content) { this.setContent(content); };
 FunctionNode_sinh.prototype = new FunctionNode("sinh");
 FunctionNode_sinh.prototype.evaluate = function(var_names, values) {
   return Math.sinh(this.content.evaluate(var_names, values));
 };
+functionNodes.sinh = FunctionNode_sinh;
 
+
+/**
+ *
+ */
 var FunctionNode_cosh = function(content) { this.setContent(content); };
 FunctionNode_cosh.prototype = new FunctionNode("cosh");
 FunctionNode_cosh.prototype.evaluate = function(var_names, values) {
   return Math.cosh(this.content.evaluate(var_names, values));
 };
+functionNodes.cosh = FunctionNode_cosh;
 
+
+/**
+ *
+ */
 var FunctionNode_tanh = function(content) { this.setContent(content); };
 FunctionNode_tanh.prototype = new FunctionNode("tanh");
 FunctionNode_tanh.prototype.evaluate = function(var_names, values) {
   return Math.tanh(this.content.evaluate(var_names, values));
 };
+functionNodes.tanh = FunctionNode_tanh;
 
+
+/**
+ *
+ */
 var FunctionNode_ln = function(content) { this.setContent(content); };
 FunctionNode_ln.prototype = new FunctionNode("ln");
 FunctionNode_ln.prototype.evaluate = function(var_names, values) {
   var v = this.content.evaluate(var_names, values);
   return Math.log(v) / Math.log(Math.E);
 };
+functionNodes.ln = FunctionNode_ln;
 
+
+/**
+ *
+ */
 var FunctionNode_log = function(content) { this.setContent(content); };
 FunctionNode_log.prototype = new FunctionNode("log");
 FunctionNode_log.prototype.evaluate = function(var_names, values) {
   var v = this.content.evaluate(var_names, values);
   return Math.log(v) / Math.log(10);
 };
+functionNodes.log = FunctionNode_log;
 
+
+/**
+ *
+ */
 var FunctionNode_sqrt = function(content) { this.setContent(content); };
 FunctionNode_sqrt.prototype = new FunctionNode("sqrt");
 FunctionNode_sqrt.prototype.evaluate = function(var_names, values) {
   return Math.sqrt(this.content.evaluate(var_names, values));
 };
 FunctionNode_sqrt.prototype.toLaTeX = function() { return "\\sqrt{" + this.content.toLaTeX() + "}"; };
+functionNodes.sqrt = FunctionNode_sqrt;
 
+
+/**
+ *
+ */
 var FunctionNode_abs = function(content) { this.setContent(content); };
 FunctionNode_abs.prototype = new FunctionNode("abs");
 FunctionNode_abs.prototype.evaluate = function(var_names, values) {
   return Math.abs(this.content.evaluate(var_names, values));
 };
 FunctionNode_abs.prototype.toLaTeX = function() { return "|" + this.content.toLaTeX() + "|"; };
+functionNodes.abs = FunctionNode_abs;
 
 
 // builder function
 var getFunctionNode = function(functor, content) {
-  if (functor == "sin")  return new FunctionNode_sin(content);
-  if (functor == "cos")  return new FunctionNode_cos(content);
-  if (functor == "tan")  return new FunctionNode_tan(content);
-  if (functor == "asin") return new FunctionNode_asin(content);
-  if (functor == "acos") return new FunctionNode_acos(content);
-  if (functor == "atan") return new FunctionNode_atan(content);
-  if (functor == "sinh") return new FunctionNode_sinh(content);
-  if (functor == "cosh") return new FunctionNode_cosh(content);
-  if (functor == "tanh") return new FunctionNode_tanh(content);
-  if (functor == "ln")   return new FunctionNode_ln(content);
-  if (functor == "log")  return new FunctionNode_log(content);
-  if (functor == "sqrt") return new FunctionNode_sqrt(content);
-  if (functor == "abs")  return new FunctionNode_abs(content);
+  if(functionNodes[functor]) {
+    return new functionNodes[functor](content);
+  }
   return false;
 };
 
@@ -529,23 +683,40 @@ Tape.prototype = {
   /**
    * read the current character on the tape.
    */
-  read: function() { return this.data[this.position]; },
+  read: function() {
+    return this.data[this.position];
+  },
+
   /**
    * checks whether there are more characters that can be read.
    */
-  more: function() { return this.position<this.length; },
+  more: function() {
+    return this.position<this.length;
+  },
+
   /**
    * advance the tape by one spot
    */
-  advance: function() { if(this.position<this.length-1) this.position++; },
+  advance: function() {
+    if(this.position<this.length-1) {
+      this.position++;
+    }
+  },
+
   /**
    * read the next unread character on the tape.
    */
-  next: function() { return this.data[this.position++]; },
+  next: function() {
+    return this.data[this.position++];
+  },
+
   /**
    * look at the next character without forwarding the read head.
    */
-  peek: function() { return this.data[this.position+1]; },
+  peek: function() {
+    return this.data[this.position+1];
+  },
+
   /**
    * Recursively skip over a grouped expression.
    * This is important for skipping over bracketed
@@ -559,17 +730,21 @@ Tape.prototype = {
       if(_tmp == opener) {
         buffer += this.skipGroup(opener, closer);
       }
-      else if(_tmp == closer) { break; }
-      else { buffer += _tmp; }
+      else if(_tmp == closer) {
+        break;
+      }
+      else {
+        buffer += _tmp;
+      }
     }
     return opener + buffer + closer;
   },
   /**
    * Generate the String representation of this tape.
    */
-  toString: function() { 
-    var s = join(this.data, ''); 
-    s = s.substring(0,this.position)+" "+this.data[this.position]+" "+s.substring(this.position+1);
+  toString: function() {
+    var s = join(this.data, '');
+    s = s.substring(0,this.position) + " " + this.data[this.position] + " " + s.substring(this.position+1);
     return s;
   }
 };
@@ -609,6 +784,7 @@ ArithmeticFragment.prototype = {
     // tells us whether we're already expanded
     this.expanded = false;
   },
+
   /**
    * balanced parentheses?
    */
@@ -621,12 +797,14 @@ ArithmeticFragment.prototype = {
       if(toks[i] == ")") pCount--; }
     return pCount;
   },
+
   // functor(...) fragment?
   isFunctionWrapped: function(fragment) {
     if(!fragment.match(/^\w+\(.+\)/)) return false;
     fragment = fragment.replace(/^\w+/g,'');
     return this.isParensWrapped(fragment);
   },
+
   // (...) fragment?
   isParensWrapped: function(fragment) {
     if(!fragment.match(/^\(.*\)$/)) return false;
@@ -641,10 +819,12 @@ ArithmeticFragment.prototype = {
     }
     return groupCount===0;
   },
+
   // does a char represent a mathematical operator?
   isArithmeticOperator: function(t) {
     return t=="+" || t=="-" || t=="*" || t=="/" || t=="^" || t=="!";
   },
+
   /**
    * Expand this fragment, if possible
    */
@@ -736,6 +916,7 @@ ArithmeticFragment.prototype = {
 
     this.expanded = true;
   },
+
   /**
    * form the function tree that maps to this fragment
    */
@@ -801,6 +982,7 @@ ArithmeticFragment.prototype = {
 
     return finalNode;
   },
+
   /**
    * toString - always useful
    */
@@ -831,7 +1013,7 @@ var UnaryOperator = function(op) { this.setup(""); this.operator = op; };
 UnaryOperator.prototype = new Operator("");
 
 /**
- * scripts/MathFunction/MathFunction.js
+ * scripts/MathFunction/dependencies/utils.js
  */
 
 /**
@@ -843,6 +1025,7 @@ if(!MathJax) {
     console.warn("MathJax is not available, math functions will not be able to render LaTeX.");
   }
 }
+
 
 /**
  * Naive asymptote finding. Works by constructing a running dy/dx value
@@ -876,6 +1059,7 @@ var hasAsymptote = (function() {
   };
 }());
 
+
 /**
  * Generic mapping function, with safeties. Note that this is a generator,
  * and yields a map function based on the indicated target domain.
@@ -893,10 +1077,13 @@ var map = function(r1, r2) {
   };
 };
 
+/**
+ * scripts/MathFunction/MathFunction.js
+ */
 
-// ==========================================
-
-
+/**
+ * define object
+ */
 var MathFunction = function(functionText) {
   this.plotCanvas = false;
   this.functionString = "";
@@ -905,6 +1092,12 @@ var MathFunction = function(functionText) {
   this.functionTree = false;
   this.init(functionText);
 };
+
+/**
+ * define object
+ */
+window.MathFunction = MathFunction;
+
 
 MathFunction.prototype = {
   /**
@@ -919,12 +1112,26 @@ MathFunction.prototype = {
       this.LaTeX = this.functionTree.toLaTeX();
     } else { throw "Function is unbalanced: "+this.arithmeticFragment.toString()+" has "+balance+" open groups"; }
   },
+
+  /**
+   * Build the page representation for this function:
+   *
+   * - a plotted graph
+   * - a (LaTeX) formula
+   * - variable controls
+   *
+   */
+  build: function(panel, options, viewbox) {
+     // ...
+  },
+
   /**
    * get all parameters used in this function
    */
   getParameters: function() {
     return this.functionTree.getParameters();
   },
+
   /**
    * show the function on the page, in LaTeX format. Typeset with MathJax, if available
    */
@@ -935,6 +1142,7 @@ MathFunction.prototype = {
       MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]);
     } else { container.innerHTML = this.functionTree.toString(); }
   },
+
   /**
    * plot this function on the page
    */
@@ -949,7 +1157,7 @@ MathFunction.prototype = {
       canvas.height = options.height || 400;
       this.mapy = map(canvas.height,0);
       canvas.style.border = "1px solid black";
-      container.innerHTML="";
+      container.innerHTML = "";
       container.appendChild(canvas);
       this.plotCanvas = canvas;
       context = this.plotCanvas.getContext("2d");
@@ -963,6 +1171,7 @@ MathFunction.prototype = {
     this.drawAxes(context, viewbox.axes, minmax);
     this.drawPlotData(context, plotData, minmax);
   },
+
   /**
    * draw the plot axes
    */
@@ -983,11 +1192,11 @@ MathFunction.prototype = {
     context.stroke();
     context.beginPath();
   },
+
   /**
    * draw the function onto the canvas
    */
   drawPlotData: function(context, plotData, minmax) {
-    context = context || this.plotCanvas.getContext("2d");
     var asymptotes = minmax.asymptotes;
     context.strokeStyle = "black";
     var i, last=plotData.length, ox, x, y;
@@ -1006,6 +1215,7 @@ MathFunction.prototype = {
     context.stroke();
     this.drawAsymptotes(context, minmax);
   },
+
   /**
    * draw asymptotes, if the function has any
    */
@@ -1022,6 +1232,7 @@ MathFunction.prototype = {
       });
     }
   },
+
   /**
    * clear the canvas. We should only do this automatically on a freshly built canvas.
    */
@@ -1030,6 +1241,7 @@ MathFunction.prototype = {
     this.plotCanvas.width = this.options.width;
     this.plotCanvas.height = this.options.height;
   },
+
   /**
    * Substitute a variable with a function
    */
@@ -1043,9 +1255,25 @@ MathFunction.prototype = {
     this.arithmeticFragment = mf.arithmeticFragment;
     this.functionTree = mf.functionTree;
   },
-  toString: function() { return this.functionString; },
-  toLaTeX: function() { return this.LaTeX; }
+
+  /**
+   *
+   */
+  toString: function() {
+    return this.functionString;
+  },
+
+  /**
+   *
+   */
+  toLaTeX: function() {
+    return this.LaTeX;
+  }
 };
+
+/**
+ * scripts/MathFunction/MathFunction.Compound.js
+ */
 
 /**
  * Compound (parametric) function
@@ -1057,6 +1285,7 @@ MathFunction.Compound = function(fns) {
   else { Array.prototype.forEach.call(arguments, addMathFunction); }
   this.functions = functions;
 };
+
 MathFunction.Compound.prototype = {
   /**
    * get all parameters used in this compound function
@@ -1072,6 +1301,7 @@ MathFunction.Compound.prototype = {
     });
     return parameters;
   },
+
   /**
    * show the function on the page, in LaTeX format. Typeset with MathJax, if available
    */
@@ -1084,6 +1314,7 @@ MathFunction.Compound.prototype = {
     container.innerHTML = str;
     if(MathJax) { MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]); }
   },
+
   /**
    * Plot a compound function. The options object is similar to
    * the one used for MathFunction, but has an extra property
@@ -1122,6 +1353,7 @@ MathFunction.Compound.prototype = {
     this.drawAxes(context, viewbox.order, viewbox.axes, minmax);
     this.drawPlotData(context, viewbox.order, plotData, minmax);
   },
+
   /**
    * draw the plot axes
    */
@@ -1145,12 +1377,12 @@ MathFunction.Compound.prototype = {
     context.stroke();
     context.beginPath();
   },
+
   /**
    * draw the function onto the canvas
    */
   drawPlotData: function(context, order, plotData, minmax) {
     order = order || [0,1];
-    context = context || this.plotCanvas.getContext("2d");
     context.strokeStyle = "black";
     var i, last=plotData[0].length, ox, oy, x, y, xid=order[0], yid=order[1];
     for(i=0; i<last; i++) {
@@ -1162,12 +1394,17 @@ MathFunction.Compound.prototype = {
     }
     context.stroke();
   },
+
   /**
    * clear all plots so far
    */
   clear: function(context) {
     MathFunction.prototype.clear.call(this,context);
   },
+
+  /**
+   *
+   */
   toString: function() {
     var str = [];
     this.functions.forEach(function(mf) {
@@ -1175,6 +1412,10 @@ MathFunction.Compound.prototype = {
     });
     return str.join(", ");
   },
+
+  /**
+   *
+   */
   toLaTeX: function() {
     var str = [];
     this.functions.forEach(function(mf) {
@@ -1183,9 +1424,6 @@ MathFunction.Compound.prototype = {
     return str;
   }
 };
-
-// bind object
-window.MathFunction = MathFunction;
 
 /**
  * scripts/wrapper/MathFunction_footer.js

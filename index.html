@@ -13,18 +13,18 @@
 
     <div class="column">
       <section class="tabbed" data-title="MathFunction">
-        <input type="text" class="function" value="a*sin(x) - b*tan(x) + cos(x^(c/40))" style="width:400px" onchange="style()">
-        <button onclick="style()">plot</button>
+        <input type="text" class="function" value="a*sin(x) - b*tan(x) + cos(x^(c/40))" style="width:400px" onchange="update()">
+        <button onclick="update()">plot</button>
         <figure>
           <div class="plots"></div>
           <p class="prettyFormula"></p>
-          <div><input type="range" class="start" min="0" max="10" step="0.01" value="0" onchange="style()">
+          <div><input type="range" class="start" min="0" max="10" step="0.01" value="0" onchange="update()">
             (start <span class='startval'></span>)
           </div>
-          <div><input type="range" class="end" min="0" max="10" step="0.01" value="10" onchange="style()">
+          <div><input type="range" class="end" min="0" max="10" step="0.01" value="10" onchange="update()">
             (end <span class='endval'></span>)
           </div>
-          <div><input type="range" class="step" min="0" max="0.01" step="0.0001" value="0.003" onchange="style()">
+          <div><input type="range" class="step" min="0" max="0.01" step="0.0001" value="0.003" onchange="update()">
             (step <span class='stepval'></span>)
           </div>
           <div class="clamps">clamped values</div>
@@ -32,26 +32,26 @@
 
         <figure class="viewbox">
           <b>VIEWBOX</b>
-          minx: <input type="text" class="v_minx" value="-0.1" onchange="style()">
-          maxx: <input type="text" class="v_maxx" value="10.1" onchange="style()">
-          miny: <input type="text" class="v_miny" value="-100" onchange="style()">
-          maxy: <input type="text" class="v_maxy" value="100" onchange="style()">
+          minx: <input type="text" class="v_minx" value="-0.1" onchange="update()">
+          maxx: <input type="text" class="v_maxx" value="10.1" onchange="update()">
+          miny: <input type="text" class="v_miny" value="-100" onchange="update()">
+          maxy: <input type="text" class="v_maxy" value="100" onchange="update()">
         </figure>
       </section>
 
       <section class="tabbed" data-title="MathFunction.Compound">
-        <input type="text" class="function" value="(a^2/(a+1)^2) * tan(cos(x)+sin(x)), (b^2/(b+1)^2) * sin(x+pi/3)" style="width:400px" onchange="style()">
-        <button onclick="style()">plot</button>
+        <input type="text" class="function" value="(a^2/(a+1)^2) * tan(cos(x)+sin(x)), (b^2/(b+1)^2) * sin(x+pi/3)" style="width:400px" onchange="update()">
+        <button onclick="update()">plot</button>
         <figure>
           <div class="plots"></div>
           <p class="prettyFormula"></p>
-          <div><input type="range" class="start" min="0" max="10" step="0.01" value="0" onchange="style()">
+          <div><input type="range" class="start" min="0" max="10" step="0.01" value="0" onchange="update()">
             (start <span class='startval'></span>)
           </div>
-          <div><input type="range" class="end" min="0" max="10" step="0.01" value="6.29" onchange="style()">
+          <div><input type="range" class="end" min="0" max="10" step="0.01" value="6.29" onchange="update()">
             (end <span class='endval'></span>)
           </div>
-          <div><input type="range" class="step" min="0" max="0.01" step="0.00001" value="0.003" onchange="style()">
+          <div><input type="range" class="step" min="0" max="0.01" step="0.00001" value="0.003" onchange="update()">
             (step <span class='stepval'></span>)
           </div>
           <div class="clamps">clamped values</div>
@@ -59,10 +59,10 @@
 
         <figure class="viewbox">
           <b>VIEWBOX</b>
-          minx: <input type="text" class="v_minx" value="-7" onchange="style()">
-          maxx: <input type="text" class="v_maxx" value="7" onchange="style()">
-          miny: <input type="text" class="v_miny" value="-1.5" onchange="style()">
-          maxy: <input type="text" class="v_maxy" value="1.5" onchange="style()">
+          minx: <input type="text" class="v_minx" value="-7" onchange="update()">
+          maxx: <input type="text" class="v_maxx" value="7" onchange="update()">
+          miny: <input type="text" class="v_miny" value="-1.5" onchange="update()">
+          maxy: <input type="text" class="v_maxy" value="1.5" onchange="update()">
         </figure>
 
       </section>
@@ -137,17 +137,17 @@
         'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML',
         'tabbing/tabbing.js',
         'scripts/style.js',
-        'MathFunction.min.js',
+        'MathFunction.js',
         // final callback
         function() {
           // turn sections into tabs
           setupTabs();
           var activeSections = document.querySelectorAll('section[class=tabbed]');
           activeSections.forEach(function(s) {
-            s.onreveal = function() { setTimeout(style, 50); }
+            s.onreveal = function() { setTimeout(update, 50); }
           })
           // show initial function
-          style();
+          update();
         }
       );
     </script>
