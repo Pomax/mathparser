@@ -1,7 +1,7 @@
 /**
  * Style a MathFunction on the page
  */
-var style = (function() {
+var update = (function() {
 
   var curFn = "",
       curMF = false,
