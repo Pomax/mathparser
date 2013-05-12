@@ -36,6 +36,19 @@ console.log("Reading files...");
     fs.writeFile("MathFunction.js", aggregateData, "utf8");
 
     console.log("Minifying to: MathFunction.min.js");
+
+    new compressor.minify({
+      type: 'gcc',
+      fileIn: 'toolkit/tiny-toolkit.js',
+      fileOut: 'toolkit/ttk.js'
+    });
+
+    new compressor.minify({
+      type: 'gcc',
+      fileIn: 'toolkit/tiny-toolkit-input-type-range.js',
+      fileOut: 'toolkit/ttk-range.js'
+    });
+
     new compressor.minify({
       type: 'gcc',
       fileIn: 'MathFunction.js',
