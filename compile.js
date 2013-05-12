@@ -1,3 +1,5 @@
+console.log("Compile started...");
+
 var fs = require("fs"),
     compressor = require("node-minify"),
     scriptPath = "scripts/",
@@ -5,6 +7,7 @@ var fs = require("fs"),
     dependenciesPath = targetPath + "dependencies/",
     wrapperPath = scriptPath + "wrapper/",
     target = targetPath + "MathFunction.js",
+    targetCompound = targetPath + "MathFunction.Compound.js",
     dependencies = (function(path){
       return [
         "FunctionTree.js",
@@ -13,18 +16,19 @@ var fs = require("fs"),
         "FunctionNodes.js",
         "AggregatorNodes.js",
         "Tape.js",
-        "ArithmeticFragment.js"
+        "ArithmeticFragment.js",
+        "utils.js"
       ].map(function(fileName){return path + fileName;});
     }(dependenciesPath)),
     header = wrapperPath + "MathFunction_header.js",
-    footer = wrapperPath + "MathFunction_footer.js";
-
-console.log("Compile started...");
-var aggregateData = "",
-    files = [ header ].concat(dependencies).concat([target, footer]);
+    footer = wrapperPath + "MathFunction_footer.js",
+    aggregateData = "",
+    files = [header].concat(dependencies).concat([target, targetCompound, footer]);
 
 console.log("Reading files...");
+
 (function readNext() {
+  // all files processed
   if(files.length===0) {
     console.log("Total aggregate size: "+(new Buffer(aggregateData,"utf8")).length+" bytes");
 
@@ -45,6 +49,8 @@ console.log("Reading files...");
     });
     return;
   }
+
+  // more files to process
   var file = files.splice(0,1)[0];
   fs.readFile(file, "utf8", function (err,data) {
     console.log("> "+file);

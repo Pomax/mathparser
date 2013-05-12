@@ -1,7 +1,7 @@
 /**
  * Style a MathFunction on the page
  */
-var style = (function() {
+var update = (function() {
 
   var curFn = "",
       curMF = false,
@@ -47,7 +47,7 @@ var style = (function() {
         if(clamps.find(".label"+clamp).length>0) return;
         clamped.push(clamp);
         var range = create("input");
-        range = range.set("type","range");
+        range.set("type","range");
         range.set({min:0,max:100,step:1,value:1});
         range.onchange = function() { plot(); };
         range.classes().add("label"+clamp);
