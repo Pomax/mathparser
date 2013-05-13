@@ -36,11 +36,12 @@
    */
   function reposition(rails, slider, options) {
     if (rails.get("disabled") === "disabled") return;
-    var x = options.screenX,
+    var x = options.clientX,
         rpos = rails.position(),
         min = rpos.left,
         max = rpos.right - slider.position().width,
         oldval = parseFloat(rails.get("value"));
+
     if (min <= x && x <= max) {
       x -= min;
       var ncmin = parseFloat(rails.get("min")),
@@ -50,7 +51,8 @@
           value = ncmin + step*(Math.round(ratio * (ncmax - ncmin) / step));
       if (value > ncmax || value === oldval) return;
       oldval = value;
-      slider.css("left", parseInt(1000 * (value - ncmin) / (ncmax-ncmin)) / 10 + "%");
+      var perc = parseInt(1000 * (value - ncmin) / (ncmax - ncmin)) / 10;
+      slider.css("left", perc + "%");
       slider.set("title",value);
       rails.set("value",value);
       if (rails.onchange) {
@@ -107,7 +109,7 @@
         engageRails = function(evt){
           if (evt.which === 1 || evt.button === 1) {
             rails.set("sdown", true);
-            reposition(rails, slider, {screenX: evt.screenX});
+            reposition(rails, slider, {clientX: evt.clientX});
             return false;
           }
         };
@@ -120,7 +122,7 @@
     rails.listen("touchstart", function(evt) {
       touchlock = true;
       evt.which = evt.button = 1;
-      evt.screenX = evt.touches.item(0).screenX;
+      evt.clientX = evt.touches.item(0).clientX;
       return engageRails(evt);
     }),
 
