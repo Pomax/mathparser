@@ -139,7 +139,7 @@
         reposition(rails, slider, evt);
         lastTouch = now;
       } else {
-        if(now-lastTouch>50) {
+        if(now-lastTouch>250) {
           lastTouch = -1;
         }
       }
