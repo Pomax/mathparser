@@ -36,12 +36,11 @@
    */
   function reposition(rails, slider, options) {
     if (rails.get("disabled") === "disabled") return;
-    var x = options.clientX,
+    var x = options.screenX,
         rpos = rails.position(),
         min = rpos.left,
         max = rpos.right - slider.position().width,
         oldval = parseFloat(rails.get("value"));
-
     if (min <= x && x <= max) {
       x -= min;
       var ncmin = parseFloat(rails.get("min")),
@@ -51,8 +50,7 @@
           value = ncmin + step*(Math.round(ratio * (ncmax - ncmin) / step));
       if (value > ncmax || value === oldval) return;
       oldval = value;
-      var perc = parseInt(1000 * (value - ncmin) / (ncmax - ncmin)) / 10;
-      slider.css("left", perc + "%");
+      slider.css("left", parseInt(1000 * (value - ncmin) / (ncmax-ncmin)) / 10 + "%");
       slider.set("title",value);
       rails.set("value",value);
       if (rails.onchange) {
@@ -109,7 +107,7 @@
         engageRails = function(evt){
           if (evt.which === 1 || evt.button === 1) {
             rails.set("sdown", true);
-            reposition(rails, slider, {clientX: evt.clientX});
+            reposition(rails, slider, {screenX: evt.screenX});
             return false;
           }
         };
@@ -122,7 +120,7 @@
     rails.listen("touchstart", function(evt) {
       touchlock = true;
       evt.which = evt.button = 1;
-      evt.clientX = evt.touches.item(0).clientX;
+      evt.screenX = evt.touches.item(0).screenX;
       return engageRails(evt);
     }),
 
@@ -141,7 +139,7 @@
         reposition(rails, slider, evt);
         lastTouch = now;
       } else {
-        if(now-lastTouch>100) {
+        if(now-lastTouch>50) {
           lastTouch = -1;
         }
       }
@@ -153,9 +151,11 @@
     });
 
     document.listen("touchend", function(evt) {
-      rails.set("sdown", false);
-      touchlock = false;
-      lastTouch = -1;
+      if (touchlock) {
+        rails.set("sdown", false);
+        touchlock = false;
+        lastTouch = -1;
+      }
     })
 
     // make sure the slider starts at the correct position
